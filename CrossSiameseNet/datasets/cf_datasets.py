@@ -18,8 +18,8 @@ class MolDataset(Dataset):
             - y -> labels
             - ids -> smiles
         """
-        self.X = torch.from_numpy(dc_dataset.X)
-        self.y = torch.from_numpy(dc_dataset.y)
+        self.X = torch.from_numpy(dc_dataset.X).float()
+        self.y = torch.from_numpy(dc_dataset.y).float()
         self.smiles = dc_dataset.ids
         self.n_molecules = len(self.smiles)
 
@@ -36,7 +36,7 @@ class MolDataset(Dataset):
         mf1 = self.X[id1]
 
         # difference between targets
-        target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float)
+        target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
         return mf0, mf1, target
 
