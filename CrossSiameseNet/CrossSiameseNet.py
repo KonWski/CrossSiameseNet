@@ -48,7 +48,7 @@ class CrossSiameseNet(nn.Module):
         # concat all features into a single vector
         features = torch.concat(features, dim=-1)
 
-        features = F.relu(self.linear_1(x))
+        features = F.relu(self.linear_1(features))
         features = self.batch_norm_1(features)
 
         features = F.relu(self.linear_2(features))
