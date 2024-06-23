@@ -6,36 +6,50 @@ from torch.optim import Adam
 import logging
 from datetime import datetime
 import pandas as pd
+from typing import List
 
-class SiameseMolNet(nn.Module):
-    """
-    Siamese Network measuring the similarity between two molecules
-    """
-    def __init__(self, cf_size: int):
+class CrossSiameseNet(nn.Module):
+    '''Siamese network using features from other siamese networks'''
+
+    def __init__(self, models: List[nn.Module]):
 
         super().__init__()
 
-        self.cf_size = cf_size
-        self.linear_1 = nn.Linear(cf_size, 2*cf_size)
-        self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
+        self.models = models
+        self.cf_size = models[0].cf_size
+        self.linear_1 = nn.Linear(2*self.cf_size, 4*self.cf_size)
+        self.batch_norm_1 = nn.BatchNorm1d(4*self.cf_size)
 
-        self.linear_2 = nn.Linear(2*cf_size, 2*cf_size)
-        self.batch_norm_2 = nn.BatchNorm1d(2*cf_size)
+        self.linear_2 = nn.Linear(4*self.cf_size, 4*self.cf_size)
+        self.batch_norm_2 = nn.BatchNorm1d(4*self.cf_size)
 
-        self.linear_output = nn.Linear(2*cf_size, 1)
+        self.linear_3 = nn.Linear(4*self.cf_size, 2*self.cf_size)
+        self.batch_norm_3 = nn.BatchNorm1d(2*self.cf_size)
+
+        self.linear_output = nn.Linear(2*self.cf_size, 1)
 
         # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_output]:
+        for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output]:
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
 
+
     def forward_once(self, x):
+
+        # features collected across all models
+        features = [model.forward_once(x) for model in self.models]
+
+        # concat all features into a single vector
+        features = torch.concat(features, dim=-1)
 
         features = F.relu(self.linear_1(x))
         features = self.batch_norm_1(features)
 
         features = F.relu(self.linear_2(features))
         features = self.batch_norm_2(features)
+
+        features = F.relu(self.linear_3(features))
+        features = self.batch_norm_3(features)
 
         return features
 
@@ -67,48 +81,8 @@ def save_checkpoint(checkpoint: dict, checkpoint_path: str):
     logging.info(8*"-")
 
 
-def load_checkpoint(checkpoint_path: str):
-    '''
-    loads model checkpoint from given path
-
-    Parameters
-    ----------
-    checkpoint_path : str
-        Path to checkpoint
-
-    Notes
-    -----
-    checkpoint: dict
-                parameters retrieved from training process i.e.:
-                - model_state_dict
-                - last finished number of epoch
-                - save time
-                - loss from last epoch testing
-                
-    '''
-    checkpoint = torch.load(checkpoint_path)
-    cf_size = checkpoint["cf_size"]
-
-    # initiate model
-    model = SiameseMolNet(cf_size)
-
-    # load parameters from checkpoint
-    model.load_state_dict(checkpoint["model_state_dict"])
-
-    # print loaded parameters
-    logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
-    logging.info(f"Dataset: {checkpoint['dataset']}")    
-    logging.info(f"Epoch: {checkpoint['epoch']}")
-    logging.info(f"Save dttm: {checkpoint['save_dttm']}")
-    logging.info(f"Test loss: {checkpoint['test_loss']}")
-
-    logging.info(8*"-")
-
-    return model, checkpoint
-
-
-def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader, 
-            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
+def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoader, 
+            n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
@@ -158,10 +132,9 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
         # save model to checkpoint
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
-        checkpoint["dataset"] = dataset_name
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
+        checkpoint_path = f"{checkpoints_dir}/CrossSiameseNet_{epoch}"
         save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
