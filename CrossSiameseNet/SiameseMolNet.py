@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 import logging
 from datetime import datetime
+import pandas as pd
 
 class SiameseMolNet(nn.Module):
     """
@@ -111,6 +112,8 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
     criterion = nn.MSELoss()
+    train_loss = []
+    test_loss = []
 
     for epoch in range(0, n_epochs):
         
@@ -145,6 +148,12 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
             epoch_loss = round(running_loss / loader.dataset.n_molecules, 2)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
 
+            # update report
+            if state == "train":
+                train_loss.append(epoch_loss)
+            else:
+                test_loss.append(epoch_loss)
+
         # save model to checkpoint
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
@@ -153,3 +162,10 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
 
         checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
         save_checkpoint(checkpoint, checkpoint_path)
+    
+    # save report
+    report_df = pd.DataFrame({
+        "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
+        "train_loss": train_loss, 
+        "test_loss": test_loss})
+    report_df.to_excel(f"{checkpoints_dir}/train_report.xlsx", index=False)

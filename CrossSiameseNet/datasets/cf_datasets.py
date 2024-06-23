@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 from deepchem.data.datasets import Dataset as dc_Datset
-from deepchem.molnet import load_delaney
+from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_freesolv
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
 import torch
@@ -42,13 +42,29 @@ class MolDataset(Dataset):
 
 
 def get_dataset(dataset_name: str, splitter: Splitter, cf_radius=4, cf_size=2048):
-    '''Downloads DeepChem's dataset and wraprs them into a Torch dataset'''
+    '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
+    
+    Available datasets:
+    - HIV (inhibit HIV replication)
+    - Delaney (solubility)
+    - Lipo (lipophilicity)
+    - FreeSolv (octanol/water distribution)
+    '''
 
     featurizer = CircularFingerprint(cf_radius, cf_size)
 
-    if dataset_name == "delaney":
-        tasks, datasets, transformers = load_delaney(featurizer, splitter)
+    if dataset_name == "hiv":
+        _, datasets, _ = load_hiv(featurizer, splitter)
+
+    elif dataset_name == "delaney":
+        _, datasets, _ = load_delaney(featurizer, splitter)
     
+    elif dataset_name == "lipo":
+        _, datasets, _ = load_lipo(featurizer, splitter)
+    
+    elif dataset_name == "freesolv":
+        _, datasets, _ = load_freesolv(featurizer, splitter)
+
     # convert DeepChems datasets to Torch wrappers
     train_dataset, valid_dataset, test_dataset = MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
 
