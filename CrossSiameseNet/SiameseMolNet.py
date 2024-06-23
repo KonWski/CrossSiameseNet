@@ -100,7 +100,7 @@ def load_checkpoint(checkpoint_path: str):
     logging.info(f"Dataset: {checkpoint['dataset']}")    
     logging.info(f"Epoch: {checkpoint['epoch']}")
     logging.info(f"Save dttm: {checkpoint['save_dttm']}")
-    logging.info(f"Test loss: {checkpoint['test_loss']}")
+    # logging.info(f"Test loss: {checkpoint['test_loss']}")
 
     logging.info(8*"-")
 
