@@ -145,11 +145,11 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
             epoch_loss = round(running_loss / loader.dataset.n_molecules, 2)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
 
-            # save model to checkpoint
-            checkpoint["epoch"] = epoch
-            checkpoint["model_state_dict"] = model.state_dict()
-            checkpoint["dataset"] = dataset_name
-            checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # save model to checkpoint
+        checkpoint["epoch"] = epoch
+        checkpoint["model_state_dict"] = model.state_dict()
+        checkpoint["dataset"] = dataset_name
+        checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
-            save_checkpoint(checkpoint, checkpoint_path)
+        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
+        save_checkpoint(checkpoint, checkpoint_path)
