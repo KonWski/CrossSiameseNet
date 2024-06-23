@@ -18,14 +18,11 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        self.linear_1 = nn.Linear(self.n_models*2*self.cf_size, 4*self.cf_size)
-        self.batch_norm_1 = nn.BatchNorm1d(4*self.cf_size)
+        self.linear_1 = nn.Linear(self.n_models*2*self.cf_size, 2*self.cf_size)
+        self.batch_norm_1 = nn.BatchNorm1d(2*self.cf_size)
 
-        self.linear_2 = nn.Linear(4*self.cf_size, 4*self.cf_size)
-        self.batch_norm_2 = nn.BatchNorm1d(4*self.cf_size)
-
-        self.linear_3 = nn.Linear(4*self.cf_size, 2*self.cf_size)
-        self.batch_norm_3 = nn.BatchNorm1d(2*self.cf_size)
+        self.linear_2 = nn.Linear(2*self.cf_size, 2*self.cf_size)
+        self.batch_norm_2 = nn.BatchNorm1d(2*self.cf_size)
 
         self.linear_output = nn.Linear(2*self.cf_size, 1)
 
@@ -35,7 +32,7 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output]:
+        for layer in [self.linear_1, self.linear_2, self.linear_output]:
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
         
@@ -53,9 +50,6 @@ class CrossSiameseNet(nn.Module):
 
         features = F.relu(self.linear_2(features))
         features = self.batch_norm_2(features)
-
-        features = F.relu(self.linear_3(features))
-        features = self.batch_norm_3(features)
 
         return features
 
