@@ -135,7 +135,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         checkpoint_path = f"{checkpoints_dir}/CrossSiameseNet_{epoch}"
-        save_checkpoint(checkpoint, checkpoint_path)
+        # save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
     report_df = pd.DataFrame({
