@@ -87,7 +87,7 @@ def load_checkpoint(checkpoint_path: str):
                 
     '''
     checkpoint = torch.load(checkpoint_path)
-    cf_size = checkpoint["cf_size"]
+    cf_size = 2048
 
     # initiate model
     model = SiameseMolNet(cf_size)
