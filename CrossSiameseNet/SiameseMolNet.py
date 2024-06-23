@@ -29,6 +29,10 @@ class SiameseMolNet(nn.Module):
 
     def forward_once(self, x):
 
+        print(f"Initial dtype of x: {x.dtype}")
+        print(f"Dtype after linear layer: {self.linear_1(x).dtype}")
+        print(f"Dtype after linear layer and activation function: {F.relu(self.linear_1(x)).dtype}")
+
         features = F.relu(self.linear_1(x))
         features = self.batch_norm_1(features)
 
