@@ -28,11 +28,16 @@ class CrossSiameseNet(nn.Module):
 
         self.linear_output = nn.Linear(2*self.cf_size, 1)
 
+        # turn off  grads in all parameters 
+        for model in self.models:
+            for param in model.parameters():
+                param.requires_grad = False
+
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output]:
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
-
+        
 
     def forward_once(self, x):
 
