@@ -120,7 +120,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                 
                 running_loss += loss.item()
 
-            epoch_loss = round(running_loss / loader.dataset.n_molecules, 2)
+            epoch_loss = round(running_loss / loader.dataset.n_molecules, 5)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
 
             # update report
