@@ -86,7 +86,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
-    criterion = nn.BCELoss()
+    criterion = nn.MSELoss()
     train_loss = []
     test_loss = []
 
@@ -112,7 +112,6 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
-                    outputs = torch.sigmoid(outputs)
                     loss = criterion(outputs, targets)
 
                     if state == "train":

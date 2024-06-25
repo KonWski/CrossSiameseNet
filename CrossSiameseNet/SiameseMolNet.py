@@ -112,11 +112,7 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
-
-    if dataset_name == "hiv":
-        criterion = nn.BCELoss()
-    else:
-        criterion = nn.MSELoss()
+    criterion = nn.MSELoss()
 
     train_loss = []
     test_loss = []
@@ -143,7 +139,6 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
-                    outputs = torch.sigmoid(outputs) if dataset_name == "hiv" else outputs
                     loss = criterion(outputs, targets)
 
                     if state == "train":
