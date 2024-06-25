@@ -136,9 +136,11 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                 model.eval()
 
             for _, (mfs0, mfs1, targets) in enumerate(loader):
+                
+                print(f"targets: {targets}")
 
                 with torch.set_grad_enabled(state == 'train'):
-                                
+                    
                     mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)
                     optimizer.zero_grad()
 
