@@ -86,7 +86,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
-    criterion = nn.MSELoss()
+    criterion = nn.BCELoss()
     train_loss = []
     test_loss = []
 

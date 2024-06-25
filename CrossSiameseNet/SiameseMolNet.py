@@ -112,7 +112,12 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
-    criterion = nn.MSELoss()
+
+    if dataset_name == "hiv":
+        criterion = nn.BCELoss()
+    else:
+        criterion = nn.MSELoss()
+
     train_loss = []
     test_loss = []
 
