@@ -145,6 +145,7 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
+                    print(f"outputs: {outputs}")
                     loss = criterion(outputs, targets)
 
                     if state == "train":
