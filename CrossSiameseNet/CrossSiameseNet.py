@@ -39,7 +39,7 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output1, self.linear_output2]:
+        for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output_1, self.linear_output_2]:
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
         
