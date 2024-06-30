@@ -27,7 +27,11 @@ class CrossSiameseNet(nn.Module):
         self.linear_3 = nn.Linear(2*self.cf_size, self.cf_size)
         self.batch_norm_3 = nn.BatchNorm1d(self.cf_size)
 
-        self.linear_output = nn.Linear(2*self.cf_size, 1)
+        self.linear_output_1 = nn.Linear(2*self.cf_size, self.cf_size)
+        self.batch_norm_4 = nn.BatchNorm1d(self.cf_size)
+
+        self.linear_output_2 = nn.Linear(self.cf_size, 1)
+
 
         # turn off  grads in all parameters 
         for model in self.models:
@@ -69,7 +73,10 @@ class CrossSiameseNet(nn.Module):
         features = torch.concat([features0, features1], dim=-1)
 
         # final output
-        output = self.linear_output(features)
+        output = F.relu(self.linear_output1(features))
+        output = self.batch_norm_4(output)
+
+        output = self.linear_output2(features)
 
         return output
 
