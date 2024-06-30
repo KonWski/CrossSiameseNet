@@ -76,7 +76,7 @@ class CrossSiameseNet(nn.Module):
         output = F.relu(self.linear_output_1(features))
         output = self.batch_norm_4(output)
 
-        output = self.linear_output_2(features)
+        output = self.linear_output_2(output)
 
         return output
 
