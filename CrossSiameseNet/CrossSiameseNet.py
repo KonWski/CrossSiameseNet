@@ -58,14 +58,20 @@ class CrossSiameseNet(nn.Module):
         # process two molecules
         features0 = self.forward_once(mol0)
         features1 = self.forward_once(mol1)
+        print(f"features0.shape: {features0.shape}")
+        print(f"features1.shape: {features1.shape}")
 
         # combine both feature vectors
         features = torch.stack((features0, features1), 0)
+        print(f"features_stacked.shape:{features.shape}")
+
         features_mean = torch.mean(features, 0)
+        print(f"features_mean.shape: {features_mean.shape}")
 
         # final output
         output = self.linear_output(features_mean)
-        
+        print(f"output.shape: {output.shape}")
+
         return output
 
 
