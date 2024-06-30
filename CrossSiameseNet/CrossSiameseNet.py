@@ -24,6 +24,9 @@ class CrossSiameseNet(nn.Module):
         self.linear_2 = nn.Linear(2*self.cf_size, 2*self.cf_size)
         self.batch_norm_2 = nn.BatchNorm1d(2*self.cf_size)
 
+        self.linear_3 = nn.Linear(2*self.cf_size, self.cf_size)
+        self.batch_norm_3 = nn.BatchNorm1d(self.cf_size)
+
         self.linear_output = nn.Linear(2*self.cf_size, 1)
 
         # turn off  grads in all parameters 
@@ -32,7 +35,7 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_output]:
+        for layer in [self.linear_1, self.linear_2, self.linear_3, self.linear_output]:
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
         
@@ -41,17 +44,18 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features = [model.forward_once(x) for model in self.models]
-        print(f"features before concat:{features[0].shape}")
 
         # concat all features into a single vector
         features = torch.concat(features, dim=-1)
-        print(f"features after concat:{features.shape}")
 
         features = F.relu(self.linear_1(features))
         features = self.batch_norm_1(features)
 
         features = F.relu(self.linear_2(features))
         features = self.batch_norm_2(features)
+
+        features = F.relu(self.linear_3(features))
+        features = self.batch_norm_3(features)
 
         return features
 
@@ -62,12 +66,10 @@ class CrossSiameseNet(nn.Module):
         features1 = self.forward_once(mol1)
 
         # combine both feature vectors
-        features = torch.stack((features0, features1), 0)
-
-        features_mean = torch.mean(features, 0)
+        features = torch.concat([features0, features1], dim=-1)
 
         # final output
-        output = self.linear_output(features_mean)
+        output = self.linear_output(features)
 
         return output
 
