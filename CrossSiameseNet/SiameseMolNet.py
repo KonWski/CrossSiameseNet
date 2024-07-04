@@ -7,6 +7,54 @@ import logging
 from datetime import datetime
 import pandas as pd
 
+class SiameseMolNet2(nn.Module):
+    """
+    Siamese Network measuring the similarity between two molecules
+    """
+    def __init__(self, cf_size: int):
+
+        super().__init__()
+
+        self.cf_size = cf_size
+        self.linear_1 = nn.Linear(cf_size, 2*cf_size)
+        self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
+
+        self.linear_2 = nn.Linear(2*cf_size, 2*cf_size)
+        self.batch_norm_2 = nn.BatchNorm1d(cf_size)
+
+        self.linear_output = nn.Linear(cf_size, 1)
+
+        # initialize the weights
+        for layer in [self.linear_1, self.linear_2, self.linear_output]:
+            torch.nn.init.xavier_uniform_(layer.weight)
+            layer.bias.data.fill_(0.01)
+
+    def forward_once(self, x):
+
+        features = F.relu(self.linear_1(x))
+        features = self.batch_norm_1(features)
+
+        features = F.relu(self.linear_2(features))
+        features = self.batch_norm_2(features)
+
+        return features
+
+    def forward(self, mol0, mol1):
+
+        # process two molecules
+        features0 = self.forward_once(mol0)
+        features1 = self.forward_once(mol1)
+
+        # combine both feature vectors
+        features = torch.stack((features0, features1), 0)
+        features_mean = torch.mean(features, 0)
+
+        # final output
+        output = self.linear_output(features_mean)
+        
+        return output
+
+
 class SiameseMolNet(nn.Module):
     """
     Siamese Network measuring the similarity between two molecules
