@@ -119,11 +119,10 @@ class SiameseMolNet(nn.Module):
         features1 = self.forward_once(mol1)
 
         # combine both feature vectors
-        features = torch.stack((features0, features1), 0)
-        features_mean = torch.mean(features, 0)
+        features = torch.concat([features0, features1], dim=-1)
 
         # final output
-        output = self.linear_output(features_mean)
+        output = self.linear_output(features)
         
         return output
 
