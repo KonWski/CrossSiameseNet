@@ -19,13 +19,28 @@ class SiameseMolNet2(nn.Module):
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 
-        self.linear_2 = nn.Linear(2*cf_size, cf_size)
-        self.batch_norm_2 = nn.BatchNorm1d(cf_size)
+        self.linear_2 = nn.Linear(2*cf_size, 2*cf_size)
+        self.batch_norm_2 = nn.BatchNorm1d(2*cf_size)
 
-        self.linear_output = nn.Linear(cf_size, 1)
+        self.linear_3 = nn.Linear(2*cf_size, 2*cf_size)
+        self.batch_norm_3 = nn.BatchNorm1d(2*cf_size)
+
+        self.linear_4 = nn.Linear(2*cf_size, 2*cf_size)
+        self.batch_norm_4 = nn.BatchNorm1d(2*cf_size)
+
+        self.linear_5 = nn.Linear(2*cf_size, 2*cf_size)
+        self.batch_norm_5 = nn.BatchNorm1d(2*cf_size)
+
+        self.linear_output_1 = nn.Linear(2*self.cf_size, self.cf_size)
+        self.batch_norm_6 = nn.BatchNorm1d(self.cf_size)
+
+        self.linear_output_2 = nn.Linear(self.cf_size, 1)
 
         # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_output]:
+        for layer in [self.linear_1, self.linear_2, self.linear_3, 
+                      self.linear_4, self.linear_5, self.linear_output_1, 
+                      self.linear_output_2]:
+            
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
 
@@ -36,6 +51,15 @@ class SiameseMolNet2(nn.Module):
 
         features = F.relu(self.linear_2(features))
         features = self.batch_norm_2(features)
+
+        features = F.relu(self.linear_3(features))
+        features = self.batch_norm_3(features)
+
+        features = F.relu(self.linear_4(features))
+        features = self.batch_norm_4(features)
+
+        features = F.relu(self.linear_5(features))
+        features = self.batch_norm_5(features)
 
         return features
 
@@ -50,8 +74,9 @@ class SiameseMolNet2(nn.Module):
         features_mean = torch.mean(features, 0)
 
         # final output
-        output = self.linear_output(features_mean)
-        
+        output = self.linear_output_1(features_mean)
+        output = self.linear_output_1(output)
+
         return output
 
 
