@@ -25,12 +25,6 @@ class SiameseMolNet2(nn.Module):
         self.linear_3 = nn.Linear(2*cf_size, 2*cf_size)
         self.batch_norm_3 = nn.BatchNorm1d(2*cf_size)
 
-        self.linear_4 = nn.Linear(2*cf_size, 2*cf_size)
-        self.batch_norm_4 = nn.BatchNorm1d(2*cf_size)
-
-        self.linear_5 = nn.Linear(2*cf_size, 2*cf_size)
-        self.batch_norm_5 = nn.BatchNorm1d(2*cf_size)
-
         self.linear_output_1 = nn.Linear(2*self.cf_size, self.cf_size)
         self.batch_norm_6 = nn.BatchNorm1d(self.cf_size)
 
@@ -38,8 +32,7 @@ class SiameseMolNet2(nn.Module):
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
-                      self.linear_4, self.linear_5, self.linear_output_1, 
-                      self.linear_output_2]:
+                      self.linear_output_1, self.linear_output_2]:
             
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
@@ -54,12 +47,6 @@ class SiameseMolNet2(nn.Module):
 
         features = F.relu(self.linear_3(features))
         features = self.batch_norm_3(features)
-
-        features = F.relu(self.linear_4(features))
-        features = self.batch_norm_4(features)
-
-        features = F.relu(self.linear_5(features))
-        features = self.batch_norm_5(features)
 
         return features
 
