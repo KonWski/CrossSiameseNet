@@ -62,6 +62,7 @@ class SiameseMolNet2(nn.Module):
 
         # final output
         output = self.linear_output_1(features_mean)
+        output = self.batch_norm_6(output)
         output = self.linear_output_2(output)
 
         return output
