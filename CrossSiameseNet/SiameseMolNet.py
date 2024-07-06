@@ -149,10 +149,6 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
 
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
 
-                print(f"mfs0.shape: {mfs0.shape}")
-                print(f"mfs1.shape: {mfs1.shape}")
-                print(f"targets.shape: {targets.shape}")
-
                 with torch.set_grad_enabled(state == 'train'):
                     
                     mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)

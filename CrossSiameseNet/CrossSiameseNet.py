@@ -51,8 +51,6 @@ class CrossSiameseNet(nn.Module):
         # features collected across all models
         features = [model.forward_once(x) for model in self.models]
 
-        print(f"features[0].shape: {features[0].shape}")
-
         # concat all features into a single vector
         features = torch.concat(features, dim=-1)
 
@@ -122,10 +120,6 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
 
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
                 
-                print(f"mfs0.shape: {mfs0.shape}")
-                print(f"mfs1.shape: {mfs1.shape}")
-                print(f"targets.shape: {targets.shape}")
-
                 with torch.set_grad_enabled(state == 'train'):
                                 
                     mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)
