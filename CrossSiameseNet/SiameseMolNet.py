@@ -150,7 +150,7 @@ def load_checkpoint(checkpoint_path: str):
     cf_size = 2048
 
     # initiate model
-    model = SiameseMolNet(cf_size)
+    model = SiameseMolNet2(cf_size)
 
     # load parameters from checkpoint
     model.load_state_dict(checkpoint["model_state_dict"])
