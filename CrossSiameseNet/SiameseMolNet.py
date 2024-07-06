@@ -205,6 +205,8 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                         loss.backward()
                         optimizer.step()
                 
+                print(f"loss: {loss}")
+                print(f"loss.item(): {loss.item()}")   
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / loader.dataset.n_molecules, 5)
