@@ -129,7 +129,8 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                     if state == "train":
                         loss.backward()
                         optimizer.step()
-                
+
+                print(f"loss.item(): {loss.item()}")   
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / loader.dataset.n_molecules, 5)
