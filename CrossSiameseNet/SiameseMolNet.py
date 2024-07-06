@@ -200,6 +200,7 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
 
                     outputs = model(mfs0, mfs1)
                     loss = criterion(outputs, targets)
+                    print(f"loss before backward: {loss}")
 
                     if state == "train":
                         loss.backward()
