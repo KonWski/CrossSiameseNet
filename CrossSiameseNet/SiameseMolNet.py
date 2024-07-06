@@ -202,6 +202,10 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                     print(f"mfs0: {mfs0}")
                     print(f"mfs1: {mfs1}")
 
+                    print(f"mfs0.shape: {mfs0.shape}")
+                    print(f"mfs1.shape: {mfs1.shape}")
+
+
                     print(f"outputs: {outputs}")
                     print(f"targets: {targets}")
 
