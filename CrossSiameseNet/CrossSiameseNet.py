@@ -116,7 +116,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
             else:
                 model.eval()
 
-            for _, (mfs0, mfs1, targets) in enumerate(loader):
+            for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
                                 
@@ -132,7 +132,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
 
                 running_loss += loss.item()
 
-            epoch_loss = round(running_loss / loader.dataset.n_molecules, 5)
+            epoch_loss = round(running_loss / (batch_id + 1), 5)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
 
             # update report
@@ -144,6 +144,8 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
         # save model to checkpoint
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
+        checkpoint['train_loss'] = train_loss
+        checkpoint['test_loss'] = test_loss
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         checkpoint_path = f"{checkpoints_dir}/CrossSiameseNet_{epoch}"

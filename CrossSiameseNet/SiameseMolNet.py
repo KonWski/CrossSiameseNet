@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 import pandas as pd
 
-class SiameseMolNet2(nn.Module):
+class SiameseMolNet(nn.Module):
     """
     Siamese Network measuring the similarity between two molecules
     """
@@ -68,53 +68,6 @@ class SiameseMolNet2(nn.Module):
         return output
 
 
-class SiameseMolNet(nn.Module):
-    """
-    Siamese Network measuring the similarity between two molecules
-    """
-    def __init__(self, cf_size: int):
-
-        super().__init__()
-
-        self.cf_size = cf_size
-        self.linear_1 = nn.Linear(cf_size, 2*cf_size)
-        self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
-
-        self.linear_2 = nn.Linear(2*cf_size, 2*cf_size)
-        self.batch_norm_2 = nn.BatchNorm1d(2*cf_size)
-
-        self.linear_output = nn.Linear(2*cf_size, 1)
-
-        # initialize the weights
-        for layer in [self.linear_1, self.linear_2, self.linear_output]:
-            torch.nn.init.xavier_uniform_(layer.weight)
-            layer.bias.data.fill_(0.01)
-
-    def forward_once(self, x):
-
-        features = F.relu(self.linear_1(x))
-        features = self.batch_norm_1(features)
-
-        features = F.relu(self.linear_2(features))
-        features = self.batch_norm_2(features)
-
-        return features
-
-    def forward(self, mol0, mol1):
-
-        # process two molecules
-        features0 = self.forward_once(mol0)
-        features1 = self.forward_once(mol1)
-
-        # combine both feature vectors
-        features = torch.concat([features0, features1], dim=-1)
-
-        # final output
-        output = self.linear_output(features)
-        
-        return output
-
-
 def save_checkpoint(checkpoint: dict, checkpoint_path: str):
     '''
     saves checkpoint on given checkpoint_path
@@ -150,7 +103,7 @@ def load_checkpoint(checkpoint_path: str):
     cf_size = 2048
 
     # initiate model
-    model = SiameseMolNet2(cf_size)
+    model = SiameseMolNet(cf_size)
 
     # load parameters from checkpoint
     model.load_state_dict(checkpoint["model_state_dict"])
@@ -160,7 +113,8 @@ def load_checkpoint(checkpoint_path: str):
     logging.info(f"Dataset: {checkpoint['dataset']}")    
     logging.info(f"Epoch: {checkpoint['epoch']}")
     logging.info(f"Save dttm: {checkpoint['save_dttm']}")
-    # logging.info(f"Test loss: {checkpoint['test_loss']}")
+    logging.info(f"Train loss: {checkpoint['train_loss']}")    
+    logging.info(f"Test loss: {checkpoint['test_loss']}")
 
     logging.info(8*"-")
 
@@ -191,7 +145,7 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
             else:
                 model.eval()
 
-            for _, (mfs0, mfs1, targets) in enumerate(loader):
+            for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
                     
@@ -199,28 +153,15 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
-                    print(f"mfs0: {mfs0}")
-                    print(f"mfs1: {mfs1}")
-
-                    print(f"mfs0.shape: {mfs0.shape}")
-                    print(f"mfs1.shape: {mfs1.shape}")
-
-
-                    print(f"outputs: {outputs}")
-                    print(f"targets: {targets}")
-
                     loss = criterion(outputs, targets)
-                    print(f"loss before backward: {loss}")
 
                     if state == "train":
                         loss.backward()
                         optimizer.step()
                 
-                print(f"loss: {loss}")
-                print(f"loss.item(): {loss.item()}")   
                 running_loss += loss.item()
 
-            epoch_loss = round(running_loss / loader.dataset.n_molecules, 5)
+            epoch_loss = round(running_loss / (batch_id + 1), 5)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
 
             # update report
@@ -233,6 +174,8 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
         checkpoint["dataset"] = dataset_name
+        checkpoint['train_loss'] = train_loss
+        checkpoint['test_loss'] = test_loss
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
