@@ -130,6 +130,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                         loss.backward()
                         optimizer.step()
 
+                print(f"loss: {loss}")
                 print(f"loss.item(): {loss.item()}")   
                 running_loss += loss.item()
 
