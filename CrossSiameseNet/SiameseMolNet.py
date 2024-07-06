@@ -39,6 +39,8 @@ class SiameseMolNet(nn.Module):
 
     def forward_once(self, x):
 
+        print(f"x.shape: {x.shape}")
+
         features = F.relu(self.linear_1(x))
         features = self.batch_norm_1(features)
 

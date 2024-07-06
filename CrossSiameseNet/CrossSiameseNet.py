@@ -45,6 +45,8 @@ class CrossSiameseNet(nn.Module):
         
 
     def forward_once(self, x):
+        
+        print(f"x.shape: {x.shape}")
 
         # features collected across all models
         features = [model.forward_once(x) for model in self.models]
