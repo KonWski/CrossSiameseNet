@@ -199,6 +199,12 @@ def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader,
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
+                    print(f"mfs0: {mfs0}")
+                    print(f"mfs1: {mfs1}")
+
+                    print(f"outputs: {outputs}")
+                    print(f"targets: {targets}")
+
                     loss = criterion(outputs, targets)
                     print(f"loss before backward: {loss}")
 
