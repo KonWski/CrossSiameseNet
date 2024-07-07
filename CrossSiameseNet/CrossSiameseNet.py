@@ -39,11 +39,14 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        self.fc.apply(self.weights_init)
+        for layer in self.fc:
+            if isinstance(layer, nn.Linear):
+                torch.nn.init.xavier_uniform_(layer.weight)
+                layer.bias.data.fill_(0.01)
         
 
     def forward_once(self, x):
-        
+
         # features collected across all models
         features = [model.forward_once(x) for model in self.models]
 
@@ -77,12 +80,6 @@ class CrossSiameseNet(nn.Module):
         output = self.linear_output_2(output)
 
         return output
-    
-    def weights_init(layer):
-
-        if isinstance(layer, nn.Linear):
-            torch.nn.init.xavier_uniform_(layer.weight)
-            layer.bias.data.fill_(0.01)
 
 
 def save_checkpoint(checkpoint: dict, checkpoint_path: str):
