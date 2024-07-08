@@ -18,9 +18,7 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-
-        self.fc = nn.Sequential(
-            
+        self.features = nn.Sequential(
             self.linear_1 = nn.Linear(self.n_models*2*self.cf_size, 2*self.cf_size)
             self.batch_norm_1 = nn.BatchNorm1d(2*self.cf_size)
 
@@ -29,7 +27,9 @@ class CrossSiameseNet(nn.Module):
 
             self.linear_3 = nn.Linear(2*self.cf_size, self.cf_size)
             self.batch_norm_3 = nn.BatchNorm1d(self.cf_size)
-
+        )
+        
+        self.fc = nn.Sequential(
             nn.Linear(2*self.cf_size, self.cf_size),
             nn.BatchNorm1d(self.cf_size),
             nn.Linear(self.cf_size, 1)
@@ -46,15 +46,16 @@ class CrossSiameseNet(nn.Module):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
-
     def forward_once(self, x):
 
         # features collected across all models
-        features = [model.forward_once(x) for model in self.models]
+        features_submodels = [model.forward_once(x) for model in self.models]
 
         # concat all features into a single vector
-        features = torch.concat(features, dim=-1)
+        features_submodels = torch.concat(features, dim=-1)
 
+        features = self.features(features_submodels)
+        
         return features
 
     def forward(self, mol0, mol1):
@@ -88,7 +89,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
             n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
-    optimizer = Adam(model.fc.parameters(), lr=1e-5)
+    optimizer = Adam(model.fc.parameters() + model.features.parameters(), lr=1e-5)
     criterion = nn.MSELoss()
     train_loss = []
     test_loss = []
