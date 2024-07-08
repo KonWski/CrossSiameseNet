@@ -18,16 +18,18 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        self.linear_1 = nn.Linear(self.n_models*2*self.cf_size, 2*self.cf_size)
-        self.batch_norm_1 = nn.BatchNorm1d(2*self.cf_size)
-
-        self.linear_2 = nn.Linear(2*self.cf_size, 2*self.cf_size)
-        self.batch_norm_2 = nn.BatchNorm1d(2*self.cf_size)
-
-        self.linear_3 = nn.Linear(2*self.cf_size, self.cf_size)
-        self.batch_norm_3 = nn.BatchNorm1d(self.cf_size)
 
         self.fc = nn.Sequential(
+            
+            self.linear_1 = nn.Linear(self.n_models*2*self.cf_size, 2*self.cf_size)
+            self.batch_norm_1 = nn.BatchNorm1d(2*self.cf_size)
+
+            self.linear_2 = nn.Linear(2*self.cf_size, 2*self.cf_size)
+            self.batch_norm_2 = nn.BatchNorm1d(2*self.cf_size)
+
+            self.linear_3 = nn.Linear(2*self.cf_size, self.cf_size)
+            self.batch_norm_3 = nn.BatchNorm1d(self.cf_size)
+
             nn.Linear(2*self.cf_size, self.cf_size),
             nn.BatchNorm1d(self.cf_size),
             nn.Linear(self.cf_size, 1)
@@ -52,15 +54,6 @@ class CrossSiameseNet(nn.Module):
 
         # concat all features into a single vector
         features = torch.concat(features, dim=-1)
-
-        features = F.relu(self.linear_1(features))
-        features = self.batch_norm_1(features)
-
-        features = F.relu(self.linear_2(features))
-        features = self.batch_norm_2(features)
-
-        features = F.relu(self.linear_3(features))
-        features = self.batch_norm_3(features)
 
         return features
 
