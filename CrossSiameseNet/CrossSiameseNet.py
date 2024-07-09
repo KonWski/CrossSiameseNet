@@ -107,9 +107,9 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                 model.train()
             else:
                 model.eval()
+                
                 for m in model.models:
-                    for param in m.parameters():
-                        print(f"param: {param}, requires_grad: {param.requires_grad}")
+                    model.eval()
 
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
                 
