@@ -89,7 +89,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
             n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
-    optimizer = Adam(model.fc.parameters() + model.features.parameters(), lr=1e-5)
+    optimizer = Adam([param for param in model.fc.parameters()] + [param for param in model.features.parameters()], lr=1e-5)
     criterion = nn.MSELoss()
     train_loss = []
     test_loss = []
