@@ -46,7 +46,16 @@ class CrossSiameseNet(nn.Module):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
+        for layer in self.features:
+            if isinstance(layer, nn.Linear):
+                torch.nn.init.xavier_uniform_(layer.weight)
+                layer.bias.data.fill_(0.01)
+
     def forward_once(self, x):
+
+        for m in self.models:
+            for param in m.parameters():
+                print(f"param.requires_grad: {param.requires_grad}")
 
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
