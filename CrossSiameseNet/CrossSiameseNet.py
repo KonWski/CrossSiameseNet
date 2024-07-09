@@ -35,8 +35,10 @@ class CrossSiameseNet(nn.Module):
             nn.Linear(self.cf_size, 1)
         )
 
-        # turn off  grads in all parameters 
+        # turn off grads in all parameters 
         for model in self.models:
+
+            model.eval()
             for param in model.parameters():
                 param.requires_grad = False
 
@@ -113,8 +115,6 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
                 print(f"[1] model.models[0].batch_norm_1.training: {model.models[0].batch_norm_1.training}")
             else:
                 model.eval()
-                for m in model.models:
-                    m.eval()
                 print(f"[0] model.models[0].batch_norm_1.training: {model.models[0].batch_norm_1.training}")
 
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
