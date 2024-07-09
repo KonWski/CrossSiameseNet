@@ -53,10 +53,6 @@ class CrossSiameseNet(nn.Module):
 
     def forward_once(self, x):
 
-        for m in self.models:
-            for param in m.parameters():
-                print(f"param.requires_grad: {param.requires_grad}")
-
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
 
@@ -114,11 +110,10 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
 
             if state == "train":
                 model.train()
+                print(f"[1] model.models[0].batch_norm_1.training: {model.models[0].batch_norm_1.training}")
             else:
                 model.eval()
-                
-                for m in model.models:
-                    model.eval()
+                print(f"[0] model.models[0].batch_norm_1.training: {model.models[0].batch_norm_1.training}")
 
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
                 
