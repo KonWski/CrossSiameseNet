@@ -20,13 +20,17 @@ class CrossSiameseNet(nn.Module):
         self.cf_size = models[0].cf_size
         self.features = nn.Sequential(
             nn.Conv1d(self.n_models, 1, 1),
-            nn.Linear(2*self.cf_size, self.cf_size),
             nn.Flatten(start_dim=1),
+            nn.ReLU(),
+            nn.BatchNorm1d(self.cf_size),
+            nn.Linear(2*self.cf_size, self.cf_size),
+            nn.ReLU(),
             nn.BatchNorm1d(self.cf_size)
         )
         
         self.fc = nn.Sequential(
             nn.Linear(2*self.cf_size, self.cf_size),
+            nn.ReLU(),
             nn.BatchNorm1d(self.cf_size),
             nn.Linear(self.cf_size, 1),
             nn.Sigmoid()
