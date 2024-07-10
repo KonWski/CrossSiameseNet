@@ -57,9 +57,12 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
+        print(f"len(features_submodels): {len(features_submodels)}")
+        print(f"Single models shape: {features_submodels[0].shape}")
 
         # concat all features into a single vector
         features_submodels = torch.concat(features_submodels, dim=-1)
+        print(f"Concatenated features: {features_submodels.shape}")
 
         features = self.features(features_submodels)
         
