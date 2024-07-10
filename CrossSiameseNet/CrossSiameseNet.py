@@ -21,6 +21,7 @@ class CrossSiameseNet(nn.Module):
         self.features = nn.Sequential(
             nn.Conv1d(2, 1, 1),
             nn.Linear(2*self.cf_size, self.cf_size),
+            nn.Flatten(start_dim=1),
             nn.BatchNorm1d(self.cf_size)
         )
         
@@ -39,7 +40,7 @@ class CrossSiameseNet(nn.Module):
 
         # initialize the weights
         for layer in self.fc:
-            if isinstance(layer, nn.Linear):
+            if isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv1d):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
