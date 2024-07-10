@@ -22,9 +22,6 @@ class CrossSiameseNet(nn.Module):
             nn.Linear(self.n_models*2*self.cf_size, 2*self.cf_size),
             nn.BatchNorm1d(2*self.cf_size),
 
-            nn.Linear(2*self.cf_size, 2*self.cf_size),
-            nn.BatchNorm1d(2*self.cf_size),
-
             nn.Linear(2*self.cf_size, self.cf_size),
             nn.BatchNorm1d(self.cf_size)
         )
