@@ -19,7 +19,7 @@ class CrossSiameseNet(nn.Module):
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
         self.features = nn.Sequential(
-            nn.Conv1d(2, 1, 1),
+            nn.Conv1d(self.n_models, 1, 1),
             nn.Linear(2*self.cf_size, self.cf_size),
             nn.Flatten(start_dim=1),
             nn.BatchNorm1d(self.cf_size)
@@ -28,7 +28,8 @@ class CrossSiameseNet(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(2*self.cf_size, self.cf_size),
             nn.BatchNorm1d(self.cf_size),
-            nn.Linear(self.cf_size, 1)
+            nn.Linear(self.cf_size, 1),
+            nn.Sigmoid()
         )
 
         # turn off grads in all parameters 
@@ -40,12 +41,12 @@ class CrossSiameseNet(nn.Module):
 
         # initialize the weights
         for layer in self.fc:
-            if isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv1d):
+            if isinstance(layer, nn.Linear):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
         for layer in self.features:
-            if isinstance(layer, nn.Linear):
+            if isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv1d):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
 
