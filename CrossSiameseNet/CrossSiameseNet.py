@@ -19,7 +19,8 @@ class CrossSiameseNet(nn.Module):
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
         self.features = nn.Sequential(
-            nn.Linear(self.n_models*2*self.cf_size, self.cf_size),
+            nn.Conv1d(2, 1, 1),
+            nn.Linear(2*self.cf_size, self.cf_size),
             nn.BatchNorm1d(self.cf_size)
         )
         
@@ -51,12 +52,7 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
-        print(f"len(features_submodels): {len(features_submodels)}")
-        print(f"Single models shape: {features_submodels[0].shape}")
-
-        # concat all features into a single vector
-        features_submodels = torch.concat(features_submodels, dim=-1)
-        print(f"Concatenated features: {features_submodels.shape}")
+        features_submodels = torch.stack(features_submodels, dim=-2)
 
         features = self.features(features_submodels)
         
