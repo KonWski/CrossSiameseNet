@@ -87,8 +87,8 @@ class CrossSiameseNet(nn.Module):
         # combine both feature vectors
         features = torch.concat([features0, features1], dim=-1)
 
-        print(f"features_concatenated.shape: {features.shape}")
-        print(f"n_input_neurons: {self.n_models*2*self.cf_size}")
+        # print(f"features_concatenated.shape: {features.shape}")
+        # print(f"n_input_neurons: {self.n_models*2*self.cf_size}")
 
         # final output
         output = self.fc2(features)
