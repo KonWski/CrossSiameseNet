@@ -72,7 +72,9 @@ class CrossSiameseNet(nn.Module):
         features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
 
+        print(f"features_submodels.shape: {features_submodels.shape}")
         features = self.features2(features_submodels)
+        print(f"features.shape: {features.shape}")
         
         return features
 
@@ -84,6 +86,8 @@ class CrossSiameseNet(nn.Module):
 
         # combine both feature vectors
         features = torch.concat([features0, features1], dim=-1)
+
+        print(f"features_concatenated.shape: {features.shape}")
 
         # final output
         output = self.fc2(features)
