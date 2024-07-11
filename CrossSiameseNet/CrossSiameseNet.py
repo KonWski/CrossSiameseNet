@@ -36,6 +36,18 @@ class CrossSiameseNet(nn.Module):
             nn.Sigmoid()
         )
 
+        self.features2 = nn.Sequential(
+            nn.Conv1d(self.n_models, 1, 1),
+            nn.ReLU(),
+            nn.Flatten(start_dim=1),
+            nn.BatchNorm1d(2*self.cf_size)
+        ) 
+
+        self.fc2 = nn.Sequential(
+            nn.Linear(2*self.cf_size, 1),
+            nn.Sigmoid()
+        ) 
+
         # turn off grads in all parameters 
         for model in self.models:
 
@@ -44,12 +56,12 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for layer in self.fc:
+        for layer in self.fc2:
             if isinstance(layer, nn.Linear):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
-        for layer in self.features:
+        for layer in self.features2:
             if isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv1d):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
@@ -60,7 +72,7 @@ class CrossSiameseNet(nn.Module):
         features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
 
-        features = self.features(features_submodels)
+        features = self.features2(features_submodels)
         
         return features
 
@@ -74,7 +86,7 @@ class CrossSiameseNet(nn.Module):
         features = torch.concat([features0, features1], dim=-1)
 
         # final output
-        output = self.fc(features)
+        output = self.fc2(features)
 
         return output
 
@@ -95,7 +107,7 @@ def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoa
             n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
-    optimizer = Adam([param for param in model.fc.parameters()] + [param for param in model.features.parameters()], lr=1e-5)
+    optimizer = Adam([param for param in model.fc2.parameters()] + [param for param in model.features2.parameters()], lr=1e-5)
     criterion = nn.MSELoss()
     train_loss = []
     test_loss = []
