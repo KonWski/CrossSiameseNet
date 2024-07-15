@@ -6,8 +6,6 @@ from deepchem.feat import CircularFingerprint
 import torch
 import random
 
-random.seed(123)
-
 class MolDataset(Dataset):
 
     def __init__(self, dc_dataset: dc_Datset):
