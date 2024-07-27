@@ -18,32 +18,32 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        self.features = nn.Sequential(
-            nn.Conv1d(self.n_models, 1, 1),
-            nn.ReLU(),
-            nn.Flatten(start_dim=1),
-            nn.BatchNorm1d(2*self.cf_size),
-            nn.Linear(2*self.cf_size, self.cf_size),
-            nn.ReLU(),
-            nn.BatchNorm1d(self.cf_size)
-        )
+        # self.features = nn.Sequential(
+        #     nn.Conv1d(self.n_models, 1, 1),
+        #     nn.ReLU(),
+        #     nn.Flatten(start_dim=1),
+        #     nn.BatchNorm1d(2*self.cf_size),
+        #     nn.Linear(2*self.cf_size, self.cf_size),
+        #     nn.ReLU(),
+        #     nn.BatchNorm1d(self.cf_size)
+        # )
         
-        self.fc = nn.Sequential(
-            nn.Linear(2*self.cf_size, self.cf_size),
-            nn.ReLU(),
-            nn.BatchNorm1d(self.cf_size),
-            nn.Linear(self.cf_size, 1),
-            nn.Sigmoid()
-        )
+        # self.fc = nn.Sequential(
+        #     nn.Linear(2*self.cf_size, self.cf_size),
+        #     nn.ReLU(),
+        #     nn.BatchNorm1d(self.cf_size),
+        #     nn.Linear(self.cf_size, 1),
+        #     nn.Sigmoid()
+        # )
 
-        self.features2 = nn.Sequential(
+        self.features = nn.Sequential(
             nn.Conv1d(self.n_models, 1, 1),
             nn.ReLU(),
             nn.Flatten(start_dim=1),
             nn.BatchNorm1d(2*self.cf_size)
         ) 
 
-        self.fc2 = nn.Sequential(
+        self.fc = nn.Sequential(
             nn.Linear(4*self.cf_size, 1),
             nn.Sigmoid()
         ) 
@@ -56,12 +56,12 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for layer in self.fc2:
+        for layer in self.fc:
             if isinstance(layer, nn.Linear):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
         
-        for layer in self.features2:
+        for layer in self.features:
             if isinstance(layer, nn.Linear) or isinstance(layer, nn.Conv1d):
                 torch.nn.init.xavier_uniform_(layer.weight)
                 layer.bias.data.fill_(0.01)
@@ -73,7 +73,7 @@ class CrossSiameseNet(nn.Module):
         features_submodels = torch.stack(features_submodels, dim=-2)
 
         # print(f"features_submodels.shape: {features_submodels.shape}")
-        features = self.features2(features_submodels)
+        features = self.features(features_submodels)
         # print(f"features.shape: {features.shape}")
         
         return features
@@ -91,7 +91,7 @@ class CrossSiameseNet(nn.Module):
         # print(f"n_input_neurons: {self.n_models*2*self.cf_size}")
 
         # final output
-        output = self.fc2(features)
+        output = self.fc(features)
 
         return output
 
@@ -112,7 +112,7 @@ def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: Dat
             n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
-    optimizer = Adam([param for param in model.fc2.parameters()] + [param for param in model.features2.parameters()], lr=1e-5)
+    optimizer = Adam([param for param in model.fc.parameters()] + [param for param in model.features.parameters()], lr=1e-5)
     criterion = nn.MSELoss()
     train_loss = []
     test_loss = []
