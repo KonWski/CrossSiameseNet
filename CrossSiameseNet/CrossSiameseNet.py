@@ -108,7 +108,7 @@ def save_checkpoint(checkpoint: dict, checkpoint_path: str):
     logging.info(8*"-")
 
 
-def train(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoader, 
+def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoader, 
             n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)

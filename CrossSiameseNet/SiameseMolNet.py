@@ -124,7 +124,7 @@ def load_checkpoint(checkpoint_path: str):
     return model, checkpoint
 
 
-def train(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader, 
+def train_smn(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader, 
             test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
     
     model = model.to(device)
