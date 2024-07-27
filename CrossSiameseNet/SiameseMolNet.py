@@ -30,7 +30,7 @@ class SiameseMolNet(nn.Module):
 
         self.linear_output_2 = nn.Linear(self.cf_size, 1)
 
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
@@ -66,7 +66,7 @@ class SiameseMolNet(nn.Module):
         output = self.linear_output_1(features_mean)
         output = self.batch_norm_6(output)
         output = self.linear_output_2(output)
-        output = self.sigmoid(output)
+        # output = self.sigmoid(output)
 
         return output
 
