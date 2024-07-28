@@ -44,11 +44,7 @@ class CrossSiameseNet(nn.Module):
         ) 
 
         self.fc = nn.Sequential(
-            nn.Linear(4*self.cf_size, 2*self.cf_size),
-            nn.BatchNorm1d(2*self.cf_size),
-            nn.Linear(2*self.cf_size, 64),
-            nn.BatchNorm1d(64),
-            nn.Linear(64, 1),
+            nn.Linear(4*self.cf_size, 1),
             nn.Sigmoid()
         ) 
 
