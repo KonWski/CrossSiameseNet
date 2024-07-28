@@ -67,8 +67,13 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_si
     
     elif dataset_name == "tox21":
         _, datasets, _ = load_tox21(featurizer, splitter, tasks=['NR-AR'])
- 
-    # convert DeepChems datasets to Torch wrappers
-    train_dataset, valid_dataset, test_dataset = MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
 
-    return train_dataset, valid_dataset, test_dataset
+    if splitter is not None:
+
+        # convert DeepChems datasets to Torch wrappers
+        train_dataset, valid_dataset, test_dataset = MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
+        return train_dataset, valid_dataset, test_dataset
+
+    # dataset wrapped in one object
+    else:
+        return datasets[0]
