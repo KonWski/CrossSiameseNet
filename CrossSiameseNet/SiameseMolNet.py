@@ -28,13 +28,16 @@ class SiameseMolNet(nn.Module):
         self.linear_output_1 = nn.Linear(2*self.cf_size, self.cf_size)
         self.batch_norm_6 = nn.BatchNorm1d(self.cf_size)
 
-        self.linear_output_2 = nn.Linear(self.cf_size, 1)
+        self.linear_output_2 = nn.Linear(self.cf_size, 64)
+        self.batch_norm_7 = nn.BatchNorm1d(64)
 
-        # self.sigmoid = nn.Sigmoid()
+        self.linear_output_3 = nn.Linear(64, 1)
+
+        self.sigmoid = nn.Sigmoid()
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
-                      self.linear_output_1, self.linear_output_2]:
+                      self.linear_output_1, self.linear_output_2, self.linear_output_3]:
             
             torch.nn.init.xavier_uniform_(layer.weight)
             layer.bias.data.fill_(0.01)
@@ -66,7 +69,10 @@ class SiameseMolNet(nn.Module):
         output = self.linear_output_1(features_mean)
         output = self.batch_norm_6(output)
         output = self.linear_output_2(output)
-        # output = self.sigmoid(output)
+        output = self.batch_norm_7(output)
+        output = self.linear_output_3(output)
+
+        output = self.sigmoid(output)
 
         return output
 
