@@ -76,4 +76,4 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_si
 
     # dataset wrapped in one object
     else:
-        return datasets[0]
+        return MolDataset(datasets[0])
