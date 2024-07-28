@@ -20,8 +20,8 @@ class MolDataset(Dataset):
         """
         self.X = torch.from_numpy(dc_dataset.X).float()
         self.y = torch.from_numpy(dc_dataset.y).float()
-        self.ids = dc_dataset.ids
-        self.n_molecules = len(self.ids)
+        self.smiles = dc_dataset.ids
+        self.n_molecules = len(self.smiles)
 
     def __len__(self):
         return self.n_molecules
@@ -76,4 +76,4 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_si
 
     # dataset wrapped in one object
     else:
-        return MolDataset(datasets[0])
+        return datasets[0]
