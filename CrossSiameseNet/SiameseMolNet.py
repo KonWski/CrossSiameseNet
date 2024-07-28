@@ -66,12 +66,13 @@ class SiameseMolNet(nn.Module):
         features_mean = torch.mean(features, 0)
 
         # final output
-        output = self.linear_output_1(features_mean)
+        output = F.relu(self.linear_output_1(features_mean))
         output = self.batch_norm_6(output)
-        output = self.linear_output_2(output)
-        output = self.batch_norm_7(output)
-        output = self.linear_output_3(output)
 
+        output = F.relu(self.linear_output_2(output))
+        output = self.batch_norm_7(output)
+        
+        output = self.linear_output_3(output)
         output = self.sigmoid(output)
 
         return output
