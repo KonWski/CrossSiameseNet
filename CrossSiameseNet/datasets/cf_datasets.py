@@ -41,7 +41,7 @@ class MolDataset(Dataset):
         return mf0, mf1, target
 
 
-def get_dataset(dataset_name: str, splitter: Splitter, cf_radius=4, cf_size=2048):
+def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_size=2048):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
