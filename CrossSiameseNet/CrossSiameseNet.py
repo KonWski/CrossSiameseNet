@@ -40,11 +40,14 @@ class CrossSiameseNet(nn.Module):
             nn.Conv1d(self.n_models, 1, 1),
             nn.ReLU(inplace=True),
             nn.Flatten(start_dim=1),
-            nn.BatchNorm1d(2*self.cf_size)
+            nn.BatchNorm1d(2*self.cf_size),
+            nn.Linear(2*self.cf_size, self.cf_size),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(self.cf_size)
         ) 
 
         self.fc = nn.Sequential(
-            nn.Linear(4*self.cf_size, 1),
+            nn.Linear(2*self.cf_size, 1),
             nn.Sigmoid()
         ) 
 
