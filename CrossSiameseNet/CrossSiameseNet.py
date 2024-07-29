@@ -18,23 +18,6 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        # self.features = nn.Sequential(
-        #     nn.Conv1d(self.n_models, 1, 1),
-        #     nn.ReLU(),
-        #     nn.Flatten(start_dim=1),
-        #     nn.BatchNorm1d(2*self.cf_size),
-        #     nn.Linear(2*self.cf_size, self.cf_size),
-        #     nn.ReLU(),
-        #     nn.BatchNorm1d(self.cf_size)
-        # )
-        
-        # self.fc = nn.Sequential(
-        #     nn.Linear(2*self.cf_size, self.cf_size),
-        #     nn.ReLU(),
-        #     nn.BatchNorm1d(self.cf_size),
-        #     nn.Linear(self.cf_size, 1),
-        #     nn.Sigmoid()
-        # )
 
         self.features = nn.Sequential(
             nn.Conv1d(self.n_models, 1, 1),
@@ -55,7 +38,6 @@ class CrossSiameseNet(nn.Module):
 
         # turn off grads in all parameters 
         for model in self.models:
-
             model.eval()
             for param in model.parameters():
                 param.requires_grad = False
@@ -114,11 +96,22 @@ def save_checkpoint(checkpoint: dict, checkpoint_path: str):
 
 
 def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: DataLoader, 
-            n_epochs: int, device, checkpoints_dir: str):
+            n_epochs: int, device, checkpoints_dir: str, use_weights: bool = False):
     
     model = model.to(device)
     optimizer = Adam([param for param in model.fc.parameters()] + [param for param in model.features.parameters()], lr=1e-5)
-    criterion = nn.MSELoss()
+    
+    if use_weights:
+        n_pos = len(train_loader.dataset.y[train_loader.dataset.y == 1])
+        n_neg = len(train_loader.dataset.y[train_loader.dataset.y == 0])
+
+        pos_proportion = n_neg / n_pos
+        pos_weight = torch.tensor([1, pos_proportion])
+        criterion = nn.BCEWithLogitsLoss(pos_weight = pos_weight)
+
+    else:
+        criterion = nn.MSELoss()
+
     train_loss = []
     test_loss = []
 
@@ -146,11 +139,6 @@ def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: Dat
                     outputs = model(mfs0, mfs1)
                     loss = criterion(outputs, targets)
                     
-                    print(8*"-")
-                    print(f"targets: {targets}")
-                    print(f"outputs: {outputs}")
-                    print(8*"-")
-
                     if state == "train":
                         loss.backward()
                         optimizer.step()

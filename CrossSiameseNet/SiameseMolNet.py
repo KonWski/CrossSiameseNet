@@ -11,11 +11,12 @@ class SiameseMolNet(nn.Module):
     """
     Siamese Network measuring the similarity between two molecules
     """
-    def __init__(self, cf_size: int):
+    def __init__(self, cf_size: int, use_sigmoid: bool):
 
         super().__init__()
 
         self.cf_size = cf_size
+        self.use_sigmoid = use_sigmoid
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 
@@ -33,7 +34,8 @@ class SiameseMolNet(nn.Module):
 
         self.linear_output_3 = nn.Linear(64, 1)
 
-        self.sigmoid = nn.Sigmoid()
+        if self.use_sigmoid:
+            self.sigmoid = nn.Sigmoid()
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
@@ -73,7 +75,9 @@ class SiameseMolNet(nn.Module):
         output = self.batch_norm_7(output)
         
         output = self.linear_output_3(output)
-        output = self.sigmoid(output)
+
+        if self.use_sigmoid:
+            output = self.sigmoid(output)
 
         return output
 
@@ -132,11 +136,21 @@ def load_checkpoint(checkpoint_path: str):
 
 
 def train_smn(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader, 
-            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
+            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str, use_weights: bool = False):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)
-    criterion = nn.MSELoss()
+    
+    if use_weights:
+        n_pos = len(train_loader.dataset.y[train_loader.dataset.y == 1])
+        n_neg = len(train_loader.dataset.y[train_loader.dataset.y == 0])
+
+        pos_proportion = n_neg / n_pos
+        pos_weight = torch.tensor([1, pos_proportion])
+        criterion = nn.BCEWithLogitsLoss(pos_weight = pos_weight)
+
+    else:
+        criterion = nn.MSELoss()
 
     train_loss = []
     test_loss = []
