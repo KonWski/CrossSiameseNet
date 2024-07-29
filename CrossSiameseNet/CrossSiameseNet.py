@@ -145,6 +145,11 @@ def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: Dat
 
                     outputs = model(mfs0, mfs1)
                     loss = criterion(outputs, targets)
+                    
+                    print(8*"-")
+                    print(f"targets: {targets}")
+                    print(f"outputs: {outputs}")
+                    print(8*"-")
 
                     if state == "train":
                         loss.backward()
