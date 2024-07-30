@@ -106,7 +106,7 @@ def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: Dat
         n_neg = len(train_loader.dataset.y[train_loader.dataset.y == 0])
 
         pos_proportion = n_neg / n_pos
-        pos_weight = torch.tensor([1, pos_proportion])
+        pos_weight = torch.tensor([1, pos_proportion]).to(device)
         criterion = nn.BCEWithLogitsLoss(pos_weight = pos_weight)
 
     else:
