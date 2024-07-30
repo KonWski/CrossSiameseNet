@@ -138,6 +138,8 @@ def train_csn(model: CrossSiameseNet, train_loader: DataLoader, test_loader: Dat
                     optimizer.zero_grad()
 
                     outputs = model(mfs0, mfs1)
+                    print(f"outputs.is_cuda: {outputs.is_cuda}")
+                    print(f"targets.is_cuda: {targets.is_cuda}")
                     loss = criterion(outputs, targets)
                     
                     if state == "train":
