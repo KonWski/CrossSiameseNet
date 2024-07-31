@@ -140,7 +140,8 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_si
     if splitter is not None:
 
         # convert DeepChems datasets to Torch wrappers
-        train_dataset, valid_dataset, test_dataset = MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
+        train_dataset, valid_dataset, test_dataset = \
+            MolDatasetTriplet(datasets[0], True), MolDatasetTriplet(datasets[1], False), MolDatasetTriplet(datasets[2], False)
         return train_dataset, valid_dataset, test_dataset
 
     # dataset wrapped in one object
