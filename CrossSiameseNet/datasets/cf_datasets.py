@@ -110,7 +110,7 @@ class MolDatasetTriplet(MolDataset):
         return anchor_mf, positive_mf, negative_mf
 
 
-def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_size=2048):
+def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, triplet_loss = False):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -140,10 +140,17 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_si
     if splitter is not None:
 
         # convert DeepChems datasets to Torch wrappers
-        train_dataset, valid_dataset, test_dataset = \
-            MolDatasetTriplet(datasets[0], True), MolDatasetTriplet(datasets[1], False), MolDatasetTriplet(datasets[2], False)
+        if triplet_loss:
+            train_dataset, valid_dataset, test_dataset = \
+                MolDatasetTriplet(datasets[0], True), MolDatasetTriplet(datasets[1], False), MolDatasetTriplet(datasets[2], False)
+        
+        else:
+            train_dataset, valid_dataset, test_dataset = \
+                MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
+
         return train_dataset, valid_dataset, test_dataset
 
     # dataset wrapped in one object
     else:
+
         return datasets[0]
