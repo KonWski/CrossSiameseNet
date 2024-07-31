@@ -1,7 +1,7 @@
 import torch
 import logging
 from CrossSiameseNet.SiameseMolNet import  SiameseMolNet
-from CrossSiameseNet.SiameseMolNetTL import  SiameseMolNetTriplet
+from CrossSiameseNet.SiameseMolNetTriplet import  SiameseMolNetTriplet
 
 
 def save_checkpoint(checkpoint: dict, checkpoint_path: str):
