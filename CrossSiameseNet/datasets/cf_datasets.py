@@ -103,6 +103,16 @@ class MolDatasetTriplet(MolDataset):
             positive_mf = self.X[positive_indices]
             negative_mf = self.X[negative_indices]
 
+            print("__getitem__")
+            print(f"id0: {id0}")
+            print(f"positive_indices: {positive_indices}")
+            print(f"negative_indices: {negative_indices}")
+
+
+            print(f"anchor_mf.shape: {anchor_mf.shape}")
+            print(f"positive_mf.shape: {positive_mf.shape}")
+            print(f"negative_mf.shape: {negative_mf.shape}")
+
         else:
             
             anchor_mf, positive_mf, negative_mf = self.test_triplets[0][id0], self.test_triplets[1][id0], self.test_triplets[2][id0]
