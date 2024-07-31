@@ -86,7 +86,7 @@ class MolDatasetTriplet(MolDataset):
             
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
-            print(f"anchor_label: {anchor_label}")
+            # print(f"anchor_label: {anchor_label}")
 
             # random positive and negative samples
             if anchor_label == 1:
@@ -100,9 +100,9 @@ class MolDatasetTriplet(MolDataset):
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
 
-            print(f"anchor_mf.shape: {anchor_mf.shape}")
-            print(f"positive_mf.shape: {positive_mf.shape}")
-            print(f"negative_mf.shape: {negative_mf.shape}")
+            # print(f"anchor_mf.shape: {anchor_mf.shape}")
+            # print(f"positive_mf.shape: {positive_mf.shape}")
+            # print(f"negative_mf.shape: {negative_mf.shape}")
 
         else:
             
