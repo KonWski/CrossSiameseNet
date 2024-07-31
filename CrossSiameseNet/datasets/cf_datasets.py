@@ -76,8 +76,8 @@ class MolDatasetTriplet(MolDataset):
                     positive_indices.append(random_state.choice(self.indices_1))
                     negative_indices.append(random_state.choice(self.indices_0))
 
-            positive_mf = self.y[positive_indices]
-            negative_mf = self.y[negative_indices]
+            positive_mf = self.X[positive_indices]
+            negative_mf = self.X[negative_indices]
             self.test_triplets = [anchor_mf, positive_mf, negative_mf]
 
     def __getitem__(self, id0):
@@ -100,8 +100,8 @@ class MolDatasetTriplet(MolDataset):
                     positive_indices.append(random.choice(self.indices_1))
                     negative_indices.append(random.choice(self.indices_0))
 
-            positive_mf = self.y[positive_indices]
-            negative_mf = self.y[negative_indices]
+            positive_mf = self.X[positive_indices]
+            negative_mf = self.X[negative_indices]
 
         else:
             
