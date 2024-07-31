@@ -40,7 +40,7 @@ def load_checkpoint(checkpoint_path: str, triple_loss: bool = False):
 
     # initiate model
     if triple_loss:
-        model = SiameseMolNetTriplet
+        model = SiameseMolNetTriplet(cf_size)
     else:
         model = SiameseMolNet(cf_size)
 
