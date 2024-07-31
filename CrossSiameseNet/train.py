@@ -37,6 +37,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader,
                 with torch.set_grad_enabled(state == 'train'):
                     
                     anchor_mf, positive_mf, negative_mf = anchor_mf.to(device), positive_mf.to(device), negative_mf.to(device)
+                    print(f"anchor_mf.shape: {anchor_mf.shape}")
+                    print(f"positive_mf.shape: {positive_mf.shape}")
+                    print(f"negative_mf.shape: {negative_mf.shape}")
+
                     optimizer.zero_grad()
 
                     outputs_anchor = model(anchor_mf)
