@@ -59,7 +59,7 @@ class CrossSiameseNet(nn.Module):
     def forward(self, x):
 
         # features collected across all models
-        features_submodels = [model.forward_once(x) for model in self.models if isinstance(model, SiameseMolNet) else model.forward(x)]
+        features_submodels = [model.forward_once(x) if isinstance(model, SiameseMolNet) else model.forward(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
 
         # print(f"features_submodels.shape: {features_submodels.shape}")
