@@ -1,22 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torch.optim import Adam
-import logging
-from datetime import datetime
-import pandas as pd
 
 class SiameseMolNet(nn.Module):
     """
     Siamese Network measuring the similarity between two molecules
     """
-    def __init__(self, cf_size: int, use_sigmoid: bool):
+    def __init__(self, cf_size: int):
 
         super().__init__()
 
         self.cf_size = cf_size
-        self.use_sigmoid = use_sigmoid
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 
@@ -33,9 +27,7 @@ class SiameseMolNet(nn.Module):
         self.batch_norm_7 = nn.BatchNorm1d(64)
 
         self.linear_output_3 = nn.Linear(64, 1)
-
-        if self.use_sigmoid:
-            self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid()
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
@@ -75,139 +67,6 @@ class SiameseMolNet(nn.Module):
         output = self.batch_norm_7(output)
         
         output = self.linear_output_3(output)
-
-        if self.use_sigmoid:
-            output = self.sigmoid(output)
+        output = self.sigmoid(output)
 
         return output
-
-
-def save_checkpoint(checkpoint: dict, checkpoint_path: str):
-    '''
-    saves checkpoint on given checkpoint_path
-    '''
-    torch.save(checkpoint, checkpoint_path)
-
-    logging.info(8*"-")
-    logging.info(f"Saved model to checkpoint: {checkpoint_path}")
-    logging.info(f"Epoch: {checkpoint['epoch']}")
-    logging.info(8*"-")
-
-
-def load_checkpoint(checkpoint_path: str):
-    '''
-    loads model checkpoint from given path
-
-    Parameters
-    ----------
-    checkpoint_path : str
-        Path to checkpoint
-
-    Notes
-    -----
-    checkpoint: dict
-                parameters retrieved from training process i.e.:
-                - model_state_dict
-                - last finished number of epoch
-                - save time
-                - loss from last epoch testing
-                
-    '''
-    checkpoint = torch.load(checkpoint_path)
-    cf_size = 2048
-
-    # initiate model
-    model = SiameseMolNet(cf_size)
-
-    # load parameters from checkpoint
-    model.load_state_dict(checkpoint["model_state_dict"])
-
-    # print loaded parameters
-    logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
-    logging.info(f"Dataset: {checkpoint['dataset']}")    
-    logging.info(f"Epoch: {checkpoint['epoch']}")
-    logging.info(f"Save dttm: {checkpoint['save_dttm']}")
-    logging.info(f"Train loss: {checkpoint['train_loss']}")    
-    logging.info(f"Test loss: {checkpoint['test_loss']}")
-
-    logging.info(8*"-")
-
-    return model, checkpoint
-
-
-def train_smn(model: SiameseMolNet, dataset_name: str, train_loader: DataLoader, 
-            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str, use_weights: bool = False):
-    
-    model = model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-5)
-    
-    if use_weights:
-        n_pos = len(train_loader.dataset.y[train_loader.dataset.y == 1])
-        n_neg = len(train_loader.dataset.y[train_loader.dataset.y == 0])
-
-        pos_proportion = n_neg / n_pos
-        pos_weight = torch.tensor([1, pos_proportion])
-        criterion = nn.BCEWithLogitsLoss(pos_weight = pos_weight)
-
-    else:
-        criterion = nn.MSELoss()
-
-    train_loss = []
-    test_loss = []
-
-    for epoch in range(0, n_epochs):
-        
-        checkpoint = {}
-
-        for state, loader in zip(["train", "test"], [train_loader, test_loader]):
-    
-            # calculated parameters
-            running_loss = 0.0
-
-            if state == "train":
-                model.train()
-            else:
-                model.eval()
-
-            for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
-
-                with torch.set_grad_enabled(state == 'train'):
-                    
-                    mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)
-                    optimizer.zero_grad()
-
-                    outputs = model(mfs0, mfs1)
-                    loss = criterion(outputs, targets)
-
-                    if state == "train":
-                        loss.backward()
-                        optimizer.step()
-                
-                running_loss += loss.item()
-
-            epoch_loss = round(running_loss / (batch_id + 1), 5)
-            logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-
-            # update report
-            if state == "train":
-                train_loss.append(epoch_loss)
-            else:
-                test_loss.append(epoch_loss)
-
-        # save model to checkpoint
-        checkpoint["epoch"] = epoch
-        checkpoint["model_state_dict"] = model.state_dict()
-        checkpoint["dataset"] = dataset_name
-        checkpoint['train_loss'] = train_loss
-        checkpoint['test_loss'] = test_loss
-        checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
-        save_checkpoint(checkpoint, checkpoint_path)
-    
-    # save report
-    report_df = pd.DataFrame({
-        "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
-        "train_loss": train_loss, 
-        "test_loss": test_loss})
-    report_df.to_excel(f"{checkpoints_dir}/train_report.xlsx", index=False)

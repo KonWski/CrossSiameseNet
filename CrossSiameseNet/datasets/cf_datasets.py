@@ -5,6 +5,7 @@ from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
 import torch
 import random
+import numpy as np
 
 class MolDataset(Dataset):
 
@@ -39,6 +40,74 @@ class MolDataset(Dataset):
         target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
         return mf0, mf1, target
+
+
+class MolDatasetTriplet(MolDataset):
+
+    def __init__(self, dc_dataset: dc_Datset, train: bool):
+        
+        super().__init__(dc_dataset)
+        self.train = train
+
+        indices_0_temp = self.y == 0
+        self.indices_0 = indices_0_temp.nonzero()[:,0].tolist()
+
+        indices_1_temp = self.y == 1
+        self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
+
+        # set stable test triplets for repeatance
+        if not self.train:
+            random_state = np.random.RandomState(123)
+
+            self.test_triplets = []
+
+            # random positive and negative samples
+            anchor_mf = self.X
+            positive_indices = []
+            negative_indices = []
+
+            for label in self.y.tolist():
+                
+                if label == 1:
+                    positive_indices.append(random_state.choice(self.indices_0))
+                    negative_indices.append(random_state.choice(self.indices_1))
+
+                else:
+                    positive_indices.append(random_state.choice(self.indices_1))
+                    negative_indices.append(random_state.choice(self.indices_0))
+
+            positive_mf = self.y[positive_indices]
+            negative_mf = self.y[negative_indices]
+            self.test_triplets = [anchor_mf, positive_mf, negative_mf]
+
+    def __getitem__(self, id0):
+
+        if self.train:
+            
+            anchor_mf = self.X[id0]
+            anchor_labels = self.y[id0]
+
+            # random positive and negative samples
+            positive_indices = []
+            negative_indices = []
+
+            for label in anchor_labels.tolist():
+                if label == 1:
+                    positive_indices.append(random.choice(self.indices_0))
+                    negative_indices.append(random.choice(self.indices_1))
+
+                else:
+                    positive_indices.append(random.choice(self.indices_1))
+                    negative_indices.append(random.choice(self.indices_0))
+
+            positive_mf = self.y[positive_indices]
+            negative_mf = self.y[negative_indices]
+
+        else:
+            
+            anchor_mf, positive_mf, negative_mf = self.test_triplets[0][id0], self.test_triplets[1][id0], self.test_triplets[2][id0]
+
+        return anchor_mf, positive_mf, negative_mf
 
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius=4, cf_size=2048):
