@@ -79,7 +79,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader,
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
         "train_loss": train_loss, 
         "test_loss": test_loss})
-    report_df.to_excel(f"{checkpoints_dir}/train_report.xlsx", index=False)
+    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
@@ -147,4 +147,4 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
         "train_loss": train_loss, 
         "test_loss": test_loss})
-    report_df.to_excel(f"{checkpoints_dir}/train_report.xlsx", index=False)
+    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
