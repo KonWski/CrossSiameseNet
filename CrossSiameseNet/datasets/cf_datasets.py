@@ -136,7 +136,7 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
         _, datasets, _ = load_freesolv(featurizer, splitter)
     
     elif dataset_name[:5] == "tox21":
-        task = dataset_name[dataset_name.find("_"):]
+        task = dataset_name[dataset_name.find("_")+1:]
         _, datasets, _ = load_tox21(featurizer, splitter, tasks=[task])
 
     if splitter is not None:
