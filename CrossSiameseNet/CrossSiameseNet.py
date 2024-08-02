@@ -64,7 +64,7 @@ class CrossSiameseNet(nn.Module):
         # print(f"features_submodels[1].shape: {features_submodels[1].shape}")
 
         features_submodels = torch.stack(features_submodels, dim=-2)
-        # print(f"features_submodels.shape: {features_submodels.shape}")
+        print(f"features_submodels.shape: {features_submodels.shape}")
 
         # print(f"features_submodels.shape: {features_submodels.shape}")
         features = self.features(features_submodels)
