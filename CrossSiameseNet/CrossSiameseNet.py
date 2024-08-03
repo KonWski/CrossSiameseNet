@@ -72,9 +72,9 @@ class CrossSiameseNet(nn.Module):
             nn.Flatten(start_dim=1),
             nn.BatchNorm1d(2*self.cf_size * self.n_models),
             nn.Dropout(p=0.2, inplace=True),
-            nn.Linear(2*self.cf_size * self.n_models, 2* self.cf_size),
+            nn.Linear(2*self.cf_size * self.n_models, self.cf_size * self.n_models),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(2* self.cf_size),
+            nn.BatchNorm1d(self.cf_size*self.n_models),
             nn.Dropout(p=0.2, inplace=True)
                 )
 
