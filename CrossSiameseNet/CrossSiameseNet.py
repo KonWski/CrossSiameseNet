@@ -127,15 +127,15 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) if isinstance(model, SiameseMolNet) else model.forward(x) for model in self.models]
-        print(f"features_submodels[0].shape: {features_submodels[0].shape}")
-        print(f"features_submodels[1].shape: {features_submodels[1].shape}")
-        print(f"features_submodels[2].shape: {features_submodels[1].shape}")
+        # print(f"features_submodels[0].shape: {features_submodels[0].shape}")
+        # print(f"features_submodels[1].shape: {features_submodels[1].shape}")
+        # print(f"features_submodels[2].shape: {features_submodels[1].shape}")
 
 
         features_submodels = torch.stack(features_submodels, dim=-2)
         # print(f"features_submodels.shape: {features_submodels.shape}")
 
-        print(f"features_submodels.shape: {features_submodels.shape}")
+        # print(f"features_submodels.shape: {features_submodels.shape}")
         features = self.features(features_submodels)
         # print(f"features.shape: {features.shape}")
         
