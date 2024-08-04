@@ -104,7 +104,7 @@ class CrossSiameseNet(nn.Module):
         self.features = nn.Sequential(
             nn.Conv1d(self.n_models, 16, 1),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(32),
+            nn.BatchNorm1d(16),
             nn.Dropout(p=0.2, inplace=True),
             nn.Conv1d(32, 1, 1),
             nn.ReLU(inplace=True),
