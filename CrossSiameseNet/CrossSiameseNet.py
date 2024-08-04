@@ -92,11 +92,11 @@ class CrossSiameseNet(nn.Module):
         self.features = nn.Sequential(
             nn.Conv1d(self.n_models, 32, 1),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(2*self.cf_size),
+            nn.BatchNorm1d(32),
             nn.Dropout(p=0.2, inplace=True),
             nn.Conv1d(32, 1, 1),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(2*self.cf_size),
+            nn.BatchNorm1d(1),
             nn.Dropout(p=0.2, inplace=True),
             nn.Flatten(start_dim=1)
         ) 
@@ -127,8 +127,10 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) if isinstance(model, SiameseMolNet) else model.forward(x) for model in self.models]
-        # print(f"features_submodels[0].shape: {features_submodels[0].shape}")
-        # print(f"features_submodels[1].shape: {features_submodels[1].shape}")
+        print(f"features_submodels[0].shape: {features_submodels[0].shape}")
+        print(f"features_submodels[1].shape: {features_submodels[1].shape}")
+        print(f"features_submodels[2].shape: {features_submodels[1].shape}")
+
 
         features_submodels = torch.stack(features_submodels, dim=-2)
         # print(f"features_submodels.shape: {features_submodels.shape}")
