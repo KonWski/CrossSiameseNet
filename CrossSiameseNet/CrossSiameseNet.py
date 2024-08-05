@@ -129,6 +129,11 @@ class CrossSiameseNet(nn.Module):
             nn.BatchNorm1d(128),
             nn.Dropout(p=0.2, inplace=True),
 
+            nn.Conv1d(128, 128, 1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(128),
+            nn.Dropout(p=0.2, inplace=True),
+
             nn.Conv1d(128, 64, 1),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(64),
