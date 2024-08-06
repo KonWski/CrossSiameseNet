@@ -38,13 +38,15 @@ class LinearBlock(nn.Module):
     def __init__(self, dim_in: int, dim_out: int):
 
         super().__init__()
+        self.flatten = nn.Flatten(start_dim=1)
         self.linear = nn.Linear(dim_in, dim_out)
         self.activation_function = nn.ReLU(inplace=True)
         self.batch_norm = nn.BatchNorm1d(dim_out)
         self.dropout = nn.Dropout(p=0.2, inplace=True)
 
     def forward(self, x):
-
+        
+        x = self.flatten(x)
         x = self.linear(x)
         x = self.activation_function(x)
         x = self.batch_norm(x)
