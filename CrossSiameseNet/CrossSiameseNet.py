@@ -23,7 +23,7 @@ class ConvBlock(nn.Module):
 
     def forward(self, x, residual = None):
 
-        if residual:
+        if residual is not None:
             x += residual
 
         x = self.conv(x)
