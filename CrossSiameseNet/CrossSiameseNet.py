@@ -104,6 +104,7 @@ class CrossSiameseNet(nn.Module):
         x = self.conv_block3(x)
         x = self.conv_block4(x)
         x = self.conv_block5(x, residual_features)
+        print(f"x.shape: {x.shape}")
         x = self.linear_block(x)
         
         # features = self.features(features_submodels)
