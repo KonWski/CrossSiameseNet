@@ -21,7 +21,10 @@ class ConvBlock(nn.Module):
         self.batch_norm = nn.BatchNorm1d(dim_out)
         self.dropout = nn.Dropout(p=0.2, inplace=True)
 
-    def forward(self, x):
+    def forward(self, x, residual = None):
+
+        if residual:
+            x += residual
 
         x = self.conv(x)
         x = self.activation_function(x)
@@ -40,10 +43,7 @@ class LinearBlock(nn.Module):
         self.batch_norm = nn.BatchNorm1d(dim_out)
         self.dropout = nn.Dropout(p=0.2, inplace=True)
 
-    def forward(self, x, residual = None):
-
-        if residual:
-            x += residual
+    def forward(self, x):
 
         x = self.linear(x)
         x = self.activation_function(x)
