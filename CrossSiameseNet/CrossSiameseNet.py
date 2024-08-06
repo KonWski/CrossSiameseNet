@@ -99,7 +99,7 @@ class CrossSiameseNet(nn.Module):
 
         # print(f"features_submodels.shape: {features_submodels.shape}")
         x = self.conv_block1(features_submodels)
-        residual_features = residual_features
+        residual_features = x
         x = self.conv_block2(x)
         x = self.conv_block3(x)
         x = self.conv_block4(x)
