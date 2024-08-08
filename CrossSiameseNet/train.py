@@ -25,7 +25,6 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         # set fixed training dataset for models comparison
         if epoch > 0 and use_fixed_training_triplets:
                 train_loader.dataset.refresh_fixed_triplets(epoch)
-                torch.manual_seed(epoch)
 
         for state, loader in zip(["train", "test"], [train_loader, test_loader]):
     
