@@ -6,6 +6,7 @@ from deepchem.feat import CircularFingerprint
 import torch
 import random
 import numpy as np
+import logging
 
 class MolDataset(Dataset):
 
@@ -44,7 +45,7 @@ class MolDataset(Dataset):
 
 class MolDatasetTriplet(MolDataset):
 
-    def __init__(self, dc_dataset: dc_Datset, train: bool):
+    def __init__(self, dc_dataset: dc_Datset, train: bool, use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
         
         super().__init__(dc_dataset)
         self.train = train
@@ -55,38 +56,20 @@ class MolDatasetTriplet(MolDataset):
         indices_1_temp = self.y == 1
         self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
 
+        self.use_fixed_triplets = use_fixed_triplets
+        self.seed_fixed_triplets = seed_fixed_triplets
+
         # set stable test triplets for repeatance
-        if not self.train:
-            random_state = np.random.RandomState(123)
+        if self.use_fixed_triplets:
+            self.fixed_triplets = self.__get_fixed_dataset()
 
-            self.test_triplets = []
-
-            # random positive and negative samples
-            anchor_mf = self.X
-            positive_indices = []
-            negative_indices = []
-
-            for label in self.y.tolist():
-                
-                if label == 1:
-                    positive_indices.append(random_state.choice(self.indices_1))
-                    negative_indices.append(random_state.choice(self.indices_0))
-
-                else:
-                    positive_indices.append(random_state.choice(self.indices_0))
-                    negative_indices.append(random_state.choice(self.indices_1))
-
-            positive_mf = self.X[positive_indices]
-            negative_mf = self.X[negative_indices]
-            self.test_triplets = [anchor_mf, positive_mf, negative_mf]
 
     def __getitem__(self, id0):
 
-        if self.train:
+        if not self.use_fixed_triplets:
             
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
-            # print(f"anchor_label: {anchor_label}")
 
             # random positive and negative samples
             if anchor_label == 1:
@@ -100,18 +83,44 @@ class MolDatasetTriplet(MolDataset):
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
 
-            # print(f"anchor_mf.shape: {anchor_mf.shape}")
-            # print(f"positive_mf.shape: {positive_mf.shape}")
-            # print(f"negative_mf.shape: {negative_mf.shape}")
-
-        else:
-            
-            anchor_mf, positive_mf, negative_mf = self.test_triplets[0][id0], self.test_triplets[1][id0], self.test_triplets[2][id0]
+        else:            
+            anchor_mf, positive_mf, negative_mf = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], self.fixed_triplets[2][id0]
 
         return anchor_mf, positive_mf, negative_mf
 
 
-def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, triplet_loss = False):
+    def __get_fixed_dataset(self):
+
+        random_state = np.random.RandomState(self.seed_fixed_triplets)
+
+        # random positive and negative samples
+        anchor_mf = self.X
+        positive_indices = []
+        negative_indices = []
+
+        for label in self.y.tolist():
+            
+            if label == 1:
+                positive_indices.append(random_state.choice(self.indices_1))
+                negative_indices.append(random_state.choice(self.indices_0))
+
+            else:
+                positive_indices.append(random_state.choice(self.indices_0))
+                negative_indices.append(random_state.choice(self.indices_1))
+
+        positive_mf = self.X[positive_indices]
+        negative_mf = self.X[negative_indices]
+
+        return [anchor_mf, positive_mf, negative_mf]
+    
+
+    def refresh_fixed_triplets(self, seed_fixed_triplets: int):
+        self.seed_fixed_triplets = seed_fixed_triplets
+        self.fixed_triplets = self.__get_fixed_dataset()
+
+
+def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
+                triplet_loss = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -119,7 +128,12 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
     - Delaney (solubility)
     - Lipo (lipophilicity)
     - FreeSolv (octanol/water distribution)
+    - Tox21
     '''
+
+    if use_fixed_train_triplets and not triplet_loss:
+        logging.warning("Fixed triplets for regular dataset not implemented yet")
+        return None
 
     featurizer = CircularFingerprint(cf_radius, cf_size)
 
@@ -143,8 +157,9 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset, valid_dataset, test_dataset = \
-                MolDatasetTriplet(datasets[0], True), MolDatasetTriplet(datasets[1], False), MolDatasetTriplet(datasets[2], False)
+            train_dataset = MolDatasetTriplet(datasets[0], True, use_fixed_train_triplets, seed_fixed_train_triplets)
+            valid_dataset = MolDatasetTriplet(datasets[1], False, True, 123)
+            test_dataset = MolDatasetTriplet(datasets[2], False, True, 123)
         
         else:
             train_dataset, valid_dataset, test_dataset = \

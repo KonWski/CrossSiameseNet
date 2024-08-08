@@ -8,8 +8,8 @@ import pandas as pd
 from CrossSiameseNet.checkpoints import save_checkpoint
 
 
-def train_triplet(model, dataset_name: str, train_loader: DataLoader, 
-            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
+def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
+                  n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
@@ -21,6 +21,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader,
     for epoch in range(0, n_epochs):
         
         checkpoint = {}
+
+        # set fixed training dataset for models comparison
+        if epoch > 0 and use_fixed_training_triplets:
+                train_loader.dataset.refresh_fixed_triplets(epoch)
 
         for state, loader in zip(["train", "test"], [train_loader, test_loader]):
     
