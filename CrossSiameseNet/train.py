@@ -39,13 +39,11 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             for batch_id, (anchor_mf, positive_mf, negative_mf) in enumerate(loader):
 
                 # debug
-
-                if batch_id == 0 or batch_id == 1:
-                    print(f"batch_id: {batch_id}")
-                    print(anchor_mf)
-                    print(f"torch.sum(anchor_mf, 0): {torch.sum(anchor_mf, 0).sum().item()}")
-                    print(f"torch.sum(anchor_mf, 1): {torch.sum(anchor_mf, 1).sum().item()}")
-
+                # if batch_id == 0 or batch_id == 1:
+                #     print(f"batch_id: {batch_id}")
+                #     print(anchor_mf)
+                #     print(f"torch.sum(anchor_mf, 0): {torch.sum(anchor_mf, 0).sum().item()}")
+                #     print(f"torch.sum(anchor_mf, 1): {torch.sum(anchor_mf, 1).sum().item()}")
 
                 with torch.set_grad_enabled(state == 'train'):
                     
