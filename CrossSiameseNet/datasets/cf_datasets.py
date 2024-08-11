@@ -108,21 +108,16 @@ class MolDatasetTriplet(MolDataset):
 
             if label == 1:
 
-                pos_index = random_state.choice(self.indices_1)
-                neg_index = random_state.choice(self.indices_0)
-                positive_indices.append(pos_index)
-                negative_indices.append(neg_index)
+                positive_indices.append(random_state.choice(self.indices_1))
+                negative_indices.append(random_state.choice(self.indices_0))
 
                 pos_labels.append(1)
                 neg_labels.append(0)
 
             else:
  
-                pos_index = random_state.choice(self.indices_0)
-                neg_index = random_state.choice(self.indices_1)
- 
-                positive_indices.append(pos_index)
-                negative_indices.append(neg_index)
+                positive_indices.append(random_state.choice(self.indices_0))
+                negative_indices.append(random_state.choice(self.indices_1))
 
                 pos_labels.append(0)
                 neg_labels.append(1)
