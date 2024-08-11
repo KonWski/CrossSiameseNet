@@ -98,10 +98,6 @@ class MolDatasetTriplet(MolDataset):
         positive_indices = []
         negative_indices = []
 
-        # debug
-        pos_labels = []
-        neg_labels = []
-
         for label_packed in self.y.tolist():
             
             label = label_packed[0]
@@ -111,25 +107,13 @@ class MolDatasetTriplet(MolDataset):
                 positive_indices.append(random_state.choice(self.indices_1))
                 negative_indices.append(random_state.choice(self.indices_0))
 
-                pos_labels.append(1)
-                neg_labels.append(0)
-
             else:
  
                 positive_indices.append(random_state.choice(self.indices_0))
                 negative_indices.append(random_state.choice(self.indices_1))
 
-                pos_labels.append(0)
-                neg_labels.append(1)
-
         positive_mf = self.X[positive_indices]
         negative_mf = self.X[negative_indices]
-
-        # debug
-        self.positive_indices = positive_indices
-        self.negative_indices = negative_indices
-        self.pos_labels = pos_labels
-        self.neg_labels = neg_labels
 
         return [anchor_mf, positive_mf, negative_mf]
     
