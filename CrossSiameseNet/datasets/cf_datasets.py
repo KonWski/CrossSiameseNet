@@ -102,8 +102,10 @@ class MolDatasetTriplet(MolDataset):
         pos_labels = []
         neg_labels = []
 
-        for label in self.y.tolist():
+        for label_packed in self.y.tolist():
             
+            label = label_packed[0]
+
             if label == 1:
 
                 pos_index = random_state.choice(self.indices_1)
