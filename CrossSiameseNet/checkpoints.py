@@ -51,7 +51,7 @@ def load_checkpoint(checkpoint_path: str, triple_loss: bool = False):
     logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
     logging.info(f"Dataset: {checkpoint['dataset']}")    
     logging.info(f"Epoch: {checkpoint['epoch']}")
-    logging.info(f"Used fixed training triplets: {checkpoint['used_fixed_training_triplets']}")
+    logging.info(f"Used fixed training triplets: {checkpoint.get('used_fixed_training_triplets')}")
     logging.info(f"Save dttm: {checkpoint['save_dttm']}")
     logging.info(f"Train loss: {checkpoint['train_loss']}")    
     logging.info(f"Test loss: {checkpoint['test_loss']}")
