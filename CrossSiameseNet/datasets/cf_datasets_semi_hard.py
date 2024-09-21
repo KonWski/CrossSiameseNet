@@ -91,6 +91,34 @@ class MolDatasetSemiHardTriplet(MolDataset):
         return anchor_mf, positive_mf, negative_mf
 
 
+    def __get_fixed_dataset(self):
+
+        random_state = np.random.RandomState(self.seed_fixed_triplets)
+
+        # random positive and negative samples
+        anchor_mf = self.X
+        positive_indices = []
+        negative_indices = []
+
+        for label_packed in self.y.tolist():
+            
+            label = label_packed[0]
+
+            if label == 1:
+
+                positive_indices.append(random_state.choice(self.indices_1))
+                negative_indices.append(random_state.choice(self.indices_0))
+
+            else:
+ 
+                positive_indices.append(random_state.choice(self.indices_0))
+                negative_indices.append(random_state.choice(self.indices_1))
+
+        positive_mf = self.X[positive_indices]
+        negative_mf = self.X[negative_indices]
+
+        return [anchor_mf, positive_mf, negative_mf]
+
 
 class MolDatasetTriplet(MolDataset):
 
