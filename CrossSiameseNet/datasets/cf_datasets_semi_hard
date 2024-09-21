@@ -43,6 +43,55 @@ class MolDataset(Dataset):
         return mf0, mf1, target
 
 
+class MolDatasetSemiHardTriplet(MolDataset):
+
+    def __init__(self, dc_dataset: dc_Datset, train: bool, use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
+        
+        super().__init__(dc_dataset)
+        self.train = train
+
+        indices_0_temp = self.y == 0
+        self.indices_0 = indices_0_temp.nonzero()[:,0].tolist()
+
+        indices_1_temp = self.y == 1
+        self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
+
+        self.use_fixed_triplets = use_fixed_triplets
+        self.seed_fixed_triplets = seed_fixed_triplets
+
+        # set stable test triplets for repeatance
+        if self.use_fixed_triplets:
+            self.fixed_triplets = self.__get_fixed_dataset()
+
+
+    def __getitem__(self, id0):
+
+        print(f"id0: {id0}")
+
+        if not self.use_fixed_triplets:
+            
+            anchor_mf = self.X[id0]
+            anchor_label = self.y[id0].item()
+
+            # random positive and negative samples
+            if anchor_label == 1:
+                positive_index = random.choice(self.indices_1)
+                negative_index = random.choice(self.indices_0)
+
+            else:
+                positive_index = random.choice(self.indices_0)
+                negative_index = random.choice(self.indices_1)
+
+            positive_mf = self.X[positive_index]
+            negative_mf = self.X[negative_index]
+
+        else:            
+            anchor_mf, positive_mf, negative_mf = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], self.fixed_triplets[2][id0]
+
+        return anchor_mf, positive_mf, negative_mf
+
+
+
 class MolDatasetTriplet(MolDataset):
 
     def __init__(self, dc_dataset: dc_Datset, train: bool, use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
@@ -161,13 +210,13 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, use_fixed_train_triplets, seed_fixed_train_triplets)
-            valid_dataset = MolDatasetTriplet(datasets[1], False, True, 123)
-            test_dataset = MolDatasetTriplet(datasets[2], False, True, 123)
+            train_dataset = MolDatasetSemiHardTriplet(datasets[0], True, use_fixed_train_triplets, seed_fixed_train_triplets)
+            valid_dataset = MolDatasetSemiHardTriplet(datasets[1], False, True, 123)
+            test_dataset = MolDatasetSemiHardTriplet(datasets[2], False, True, 123)
         
         else:
             train_dataset, valid_dataset, test_dataset = \
-                MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
+                MolDatasetSemiHardTriplet(datasets[0]), MolDatasetSemiHardTriplet(datasets[1]), MolDatasetSemiHardTriplet(datasets[2])
 
         return train_dataset, valid_dataset, test_dataset
 
