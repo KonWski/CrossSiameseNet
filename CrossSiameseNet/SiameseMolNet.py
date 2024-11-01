@@ -9,6 +9,7 @@ class SiameseMolNet(nn.Module):
         super().__init__()
 
         self.cf_size = cf_size
+        self.task = task
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 
