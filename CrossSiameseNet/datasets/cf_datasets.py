@@ -107,15 +107,17 @@ class MolDatasetTriplet(MolDataset):
             if label == 1:
                 positive_indices.append(random_state.choice(self.indices_1))
                 negative_indices.append(random_state.choice(self.indices_0))
+                anchor_label = torch.tensor([0, 1])
 
             else:
                 positive_indices.append(random_state.choice(self.indices_0))
                 negative_indices.append(random_state.choice(self.indices_1))
+                anchor_label = torch.tensor([1, 0])
 
         positive_mf = self.X[positive_indices]
         negative_mf = self.X[negative_indices]
 
-        return [anchor_mf, positive_mf, negative_mf]
+        return [anchor_mf, positive_mf, negative_mf, anchor_label]
     
 
     def get_pos_weights(self):
