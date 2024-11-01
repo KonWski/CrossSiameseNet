@@ -107,7 +107,8 @@ class MolDatasetTriplet(MolDataset):
 
 
         else:            
-            anchor_mf, positive_mf, negative_mf = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], self.fixed_triplets[2][id0]
+            anchor_mf, positive_mf, negative_mf, anchor_label = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], \
+                self.fixed_triplets[2][id0], self.fixed_triplets[3][id0]
 
         return anchor_mf, positive_mf, negative_mf, anchor_label
 
