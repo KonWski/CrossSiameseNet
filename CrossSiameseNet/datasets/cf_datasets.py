@@ -66,7 +66,7 @@ class MolDatasetTriplet(MolDataset):
 
     def __getitem__(self, id0):
 
-        if not self.use_fixed_triplets:
+        if not self.use_fixed_triplets and self.train == False:
             
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
@@ -75,15 +75,36 @@ class MolDatasetTriplet(MolDataset):
             if anchor_label == 1:
                 positive_index = random.choice(self.indices_1)
                 negative_index = random.choice(self.indices_0)
-                anchor_label = torch.tensor([0, 1])
             
             else:
                 positive_index = random.choice(self.indices_0)
                 negative_index = random.choice(self.indices_1)
-                anchor_label = torch.tensor([1, 0])
 
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
+
+        # oversampling
+        elif not self.use_fixed_triplets and self.train == True:
+            
+            # switch selected id
+            anchor_label = np.random.choice(2, 1, p=[0.5, 0.5]).item()
+
+            # random positive and negative samples
+            if anchor_label == 1:
+                id0 = random.choice(self.indices_1)
+                anchor_mf = self.X[id0]
+                positive_index = random.choice(self.indices_1)
+                negative_index = random.choice(self.indices_0)
+            
+            else:
+                id0 = random.choice(self.indices_0)
+                anchor_mf = self.X[id0]
+                positive_index = random.choice(self.indices_0)
+                negative_index = random.choice(self.indices_1)
+
+            positive_mf = self.X[positive_index]
+            negative_mf = self.X[negative_index]
+
 
         else:            
             anchor_mf, positive_mf, negative_mf = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], self.fixed_triplets[2][id0]
@@ -102,17 +123,15 @@ class MolDatasetTriplet(MolDataset):
 
         for label_packed in self.y.tolist():
             
-            label = label_packed[0]
+            anchor_label = label_packed[0]
 
-            if label == 1:
+            if anchor_label == 1:
                 positive_indices.append(random_state.choice(self.indices_1))
                 negative_indices.append(random_state.choice(self.indices_0))
-                anchor_label = torch.tensor([0, 1])
 
             else:
                 positive_indices.append(random_state.choice(self.indices_0))
                 negative_indices.append(random_state.choice(self.indices_1))
-                anchor_label = torch.tensor([1, 0])
 
         positive_mf = self.X[positive_indices]
         negative_mf = self.X[negative_indices]

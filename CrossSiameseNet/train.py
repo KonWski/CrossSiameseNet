@@ -13,8 +13,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
-    # criterion_triplet_loss = nn.TripletMarginLoss()
-    criterion_cross_entropy = nn.BCEWithLogitsLoss(pos_weight=train_loader.dataset.get_pos_weights())
+    criterion_triplet_loss = nn.TripletMarginLoss()
 
     train_loss = []
     test_loss = []
@@ -46,11 +45,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     optimizer.zero_grad()
 
                     outputs_anchor = model(anchor_mf)
-                    # outputs_positive = model(positive_mf)
-                    # outputs_negative = model(negative_mf)
+                    outputs_positive = model(positive_mf)
+                    outputs_negative = model(negative_mf)
 
-                    loss = criterion_cross_entropy(outputs_anchor, anchor_label)
-                    # loss = criterion_triplet_loss(outputs_anchor, outputs_positive, outputs_negative)
+                    loss = criterion_triplet_loss(outputs_anchor, outputs_positive, outputs_negative)
 
                     if state == "train":
                         loss.backward()
