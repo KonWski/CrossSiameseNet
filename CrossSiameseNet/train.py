@@ -13,7 +13,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
-    criterion = nn.TripletMarginLoss()
+    # criterion_triplet_loss = nn.TripletMarginLoss()
+    criterion_cross_entropy = nn.BCEWithLogitsLoss(pos_weight=train_loader.dataset.get_pos_weights())
 
     train_loss = []
     test_loss = []
@@ -36,28 +37,20 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             else:
                 model.eval()
 
-            for batch_id, (anchor_mf, positive_mf, negative_mf) in enumerate(loader):
-
-                # debug
-                # if batch_id == 0 or batch_id == 1:
-                #     print(f"batch_id: {batch_id}")
-                #     print(anchor_mf)
-                #     print(f"torch.sum(anchor_mf, 0): {torch.sum(anchor_mf, 0).sum().item()}")
-                #     print(f"torch.sum(anchor_mf, 1): {torch.sum(anchor_mf, 1).sum().item()}")
+            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
                     
-                    anchor_mf, positive_mf, negative_mf = anchor_mf.to(device), positive_mf.to(device), negative_mf.to(device)
-                    # print(f"anchor_mf.shape: {anchor_mf.shape}")
-                    # print(f"positive_mf.shape: {positive_mf.shape}")
-                    # print(f"negative_mf.shape: {negative_mf.shape}")
-
+                    anchor_mf, positive_mf, negative_mf, anchor_label = anchor_mf.to(device), positive_mf.to(device), \
+                        negative_mf.to(device), anchor_label.to(device)
                     optimizer.zero_grad()
 
                     outputs_anchor = model(anchor_mf)
-                    outputs_positive = model(positive_mf)
-                    outputs_negative = model(negative_mf)
-                    loss = criterion(outputs_anchor, outputs_positive, outputs_negative)
+                    # outputs_positive = model(positive_mf)
+                    # outputs_negative = model(negative_mf)
+
+                    loss = criterion_cross_entropy(outputs_anchor, anchor_label)
+                    # loss = criterion_triplet_loss(outputs_anchor, outputs_positive, outputs_negative)
 
                     if state == "train":
                         loss.backward()

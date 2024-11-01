@@ -75,10 +75,12 @@ class MolDatasetTriplet(MolDataset):
             if anchor_label == 1:
                 positive_index = random.choice(self.indices_1)
                 negative_index = random.choice(self.indices_0)
-
+                anchor_label = torch.tensor([0, 1])
+            
             else:
                 positive_index = random.choice(self.indices_0)
                 negative_index = random.choice(self.indices_1)
+                anchor_label = torch.tensor([1, 0])
 
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
@@ -86,7 +88,7 @@ class MolDatasetTriplet(MolDataset):
         else:            
             anchor_mf, positive_mf, negative_mf = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], self.fixed_triplets[2][id0]
 
-        return anchor_mf, positive_mf, negative_mf
+        return anchor_mf, positive_mf, negative_mf, anchor_label
 
 
     def __get_fixed_dataset(self):
@@ -103,12 +105,10 @@ class MolDatasetTriplet(MolDataset):
             label = label_packed[0]
 
             if label == 1:
-
                 positive_indices.append(random_state.choice(self.indices_1))
                 negative_indices.append(random_state.choice(self.indices_0))
 
             else:
- 
                 positive_indices.append(random_state.choice(self.indices_0))
                 negative_indices.append(random_state.choice(self.indices_1))
 
@@ -117,6 +117,10 @@ class MolDatasetTriplet(MolDataset):
 
         return [anchor_mf, positive_mf, negative_mf]
     
+
+    def get_pos_weights(self):
+        return torch.tensor([1, len(self.indices_0) / len(self.indices_1)])
+
 
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
         self.seed_fixed_triplets = seed_fixed_triplets

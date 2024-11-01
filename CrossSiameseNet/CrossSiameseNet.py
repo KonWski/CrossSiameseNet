@@ -70,9 +70,10 @@ class CrossSiameseNet(nn.Module):
         self.conv_block3 = ConvBlock(64, 64)
         self.conv_block4 = ConvBlock(64, 64)
         self.conv_block5 = ConvBlock(64, 64)
-        self.conv_block6 = ConvBlock(64, 1)
+        self.conv_block6 = ConvBlock(64, 2)
 
         self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
+        self.classifier = nn.Linear(2*self.cf_size, 2)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -88,19 +89,12 @@ class CrossSiameseNet(nn.Module):
         torch.nn.init.xavier_uniform_(self.linear_block.linear.weight)
         self.linear_block.linear.bias.data.fill_(0.01)
 
-    def forward(self, x):
+    def forward_once(self, x):
 
         # features collected across all models
-        features_submodels = [model.forward_once(x) if isinstance(model, SiameseMolNet) else model.forward(x) for model in self.models]
-        # print(f"features_submodels[0].shape: {features_submodels[0].shape}")
-        # print(f"features_submodels[1].shape: {features_submodels[1].shape}")
-        # print(f"features_submodels[2].shape: {features_submodels[1].shape}")
-
-
+        features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
-        # print(f"features_submodels.shape: {features_submodels.shape}")
 
-        # print(f"features_submodels.shape: {features_submodels.shape}")
         x = self.conv_block1(features_submodels)
         residual_features0 = x
         x = self.conv_block2(x)
@@ -110,8 +104,11 @@ class CrossSiameseNet(nn.Module):
         x = self.conv_block5(x, residual_features1)
         x = self.conv_block6(x)
         x = self.linear_block(x)
-        
-        # features = self.features(features_submodels)
-        # print(f"features.shape: {features.shape}")
-        
+        return x
+
+    def forward(self, x):
+
+        features = self.forward_once(x)
+        x = self.classifier(features)
+
         return x

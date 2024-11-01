@@ -6,11 +6,12 @@ class SiameseMolNet(nn.Module):
     """
     Siamese Network measuring the similarity between two molecules
     """
-    def __init__(self, cf_size: int):
+    def __init__(self, cf_size: int, task: str):
 
         super().__init__()
 
         self.cf_size = cf_size
+        self.task = task
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 
@@ -26,8 +27,10 @@ class SiameseMolNet(nn.Module):
         self.linear_output_2 = nn.Linear(self.cf_size, 64)
         self.batch_norm_7 = nn.BatchNorm1d(64)
 
-        self.linear_output_3 = nn.Linear(64, 1)
-        self.sigmoid = nn.Sigmoid()
+        if self.task == "classification":
+                self.linear_output_3 = nn.Linear(64, 2)
+        elif self.task == "regression":
+                self.linear_output_3 = nn.Linear(64, 1)
 
         # initialize the weights
         for layer in [self.linear_1, self.linear_2, self.linear_3, 
@@ -67,6 +70,5 @@ class SiameseMolNet(nn.Module):
         output = self.batch_norm_7(output)
         
         output = self.linear_output_3(output)
-        output = self.sigmoid(output)
 
         return output
