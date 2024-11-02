@@ -45,22 +45,54 @@ class MolDataset(Dataset):
 
 class MolDatasetTriplet(MolDataset):
 
-    def __init__(self, dc_dataset: dc_Datset, train: bool, use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
+    def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: bool = False, 
+                 use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
         
         super().__init__(dc_dataset)
         self.train = train
-
-        indices_0_temp = self.y == 0
-        self.indices_0 = indices_0_temp.nonzero()[:,0].tolist()
-
-        indices_1_temp = self.y == 1
-        self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
-
+        self.oversample = oversample
         self.use_fixed_triplets = use_fixed_triplets
         self.seed_fixed_triplets = seed_fixed_triplets
 
+        if self.oversample and not self.use_fixed_triplets:
+
+            indices_0 = (self.y == 0).nonzero()[:,0].tolist()
+            indices_1 = (self.y == 1).nonzero()[:,0].tolist()
+
+            oversampling_multiplicator = int(len(indices_0) / len(indices_1))
+
+            X_0 = self.X[indices_0]
+            X_1 = self.X[indices_1]
+            y_0 = self.y[indices_0]
+            y_1 = self.y[indices_1]
+            smiles_0 = self.smiles[indices_0]
+            smiles_1 = self.smiles[indices_1]
+
+            oversampled_X_1 = torch.cat([X_1 for i in range(oversampling_multiplicator)])
+            oversampled_y_1 = torch.cat([y_1 for i in range(oversampling_multiplicator)])
+            oversampled_smiles_1 = torch.cat([smiles_1 for i in range(oversampling_multiplicator)])
+
+            self.X = torch.cat([X_0, oversampled_X_1])
+            self.y = torch.cat([y_0, oversampled_y_1])
+            self.smiles = torch.cat([smiles_0, oversampled_smiles_1])
+
+            self.indices_0 = (self.y == 0).nonzero()[:,0].tolist()
+            self.indices_1 = (self.y == 1).nonzero()[:,0].tolist()
+            
+        elif not self.oversample and not self.use_fixed_triplets:
+
+            indices_0_temp = self.y == 0
+            self.indices_0 = indices_0_temp.nonzero()[:,0].tolist()
+
+            indices_1_temp = self.y == 1
+            self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
+
+        elif self.oversample and self.use_fixed_triplets:
+            logging.warning(f"MolDatasetTriplet initiated with wrong parameters: oversample(value: {self.oversample})
+                             and use_fixed_triplets(value: {self.use_fixed_triplets})")
+
         # set stable test triplets for repeatance
-        if self.use_fixed_triplets:
+        elif self.use_fixed_triplets:
             self.fixed_triplets = self.__get_fixed_dataset()
 
 
@@ -82,29 +114,6 @@ class MolDatasetTriplet(MolDataset):
 
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
-
-        # oversampling
-        elif not self.use_fixed_triplets and self.train == True:
-            
-            # switch selected id
-            anchor_label = np.random.choice(2, 1, p=[0.5, 0.5]).item()
-
-            # random positive and negative samples
-            if anchor_label == 1:
-                id0 = random.choice(self.indices_1)
-                anchor_mf = self.X[id0]
-                positive_index = random.choice(self.indices_1)
-                negative_index = random.choice(self.indices_0)
-            
-            else:
-                id0 = random.choice(self.indices_0)
-                anchor_mf = self.X[id0]
-                positive_index = random.choice(self.indices_0)
-                negative_index = random.choice(self.indices_1)
-
-            positive_mf = self.X[positive_index]
-            negative_mf = self.X[negative_index]
-
 
         else:            
             anchor_mf, positive_mf, negative_mf, anchor_label = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], \
@@ -150,7 +159,7 @@ class MolDatasetTriplet(MolDataset):
 
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
-                triplet_loss = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
+                triplet_loss = False, ovarsample: bool = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -187,7 +196,7 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, use_fixed_train_triplets, seed_fixed_train_triplets)
+            train_dataset = MolDatasetTriplet(datasets[0], True, ovarsample, use_fixed_train_triplets, seed_fixed_train_triplets)
             valid_dataset = MolDatasetTriplet(datasets[1], False, True, 123)
             test_dataset = MolDatasetTriplet(datasets[2], False, True, 123)
         
