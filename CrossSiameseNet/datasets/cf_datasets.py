@@ -70,11 +70,11 @@ class MolDatasetTriplet(MolDataset):
 
             oversampled_X_1 = torch.cat([X_1 for i in range(oversampling_multiplicator)])
             oversampled_y_1 = torch.cat([y_1 for i in range(oversampling_multiplicator)])
-            oversampled_smiles_1 = torch.cat([smiles_1 for i in range(oversampling_multiplicator)])
+            oversampled_smiles_1 = np.concatenate([smiles_1 for i in range(oversampling_multiplicator)])
 
             self.X = torch.cat([X_0, oversampled_X_1])
             self.y = torch.cat([y_0, oversampled_y_1])
-            self.smiles = torch.cat([smiles_0, oversampled_smiles_1])
+            self.smiles = np.concatenate([smiles_0, oversampled_smiles_1])
 
             self.indices_0 = (self.y == 0).nonzero()[:,0].tolist()
             self.indices_1 = (self.y == 1).nonzero()[:,0].tolist()
