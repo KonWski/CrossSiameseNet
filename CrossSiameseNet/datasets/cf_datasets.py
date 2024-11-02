@@ -98,7 +98,7 @@ class MolDatasetTriplet(MolDataset):
 
     def __getitem__(self, id0):
 
-        if not self.use_fixed_triplets and self.train == False:
+        if self.train == True:
             
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
