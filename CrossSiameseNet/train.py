@@ -14,7 +14,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     model = model.to(device)
     train_loader.dataset.model = model
     optimizer = Adam(model.parameters(), lr=1e-5)    
-    criterion_triplet_loss = nn.TripletMarginLoss(margin=3, reduction="sum")
+    criterion_triplet_loss = nn.TripletMarginLoss()
 
     train_loss = []
     test_loss = []
