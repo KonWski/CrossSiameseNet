@@ -158,7 +158,7 @@ class MolDatasetTriplet(MolDataset):
 
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
-                triplet_loss = False, ovarsample: bool = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
+                triplet_loss = False, oversample: bool = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -195,7 +195,7 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, ovarsample, use_fixed_train_triplets, seed_fixed_train_triplets)
+            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets)
             valid_dataset = MolDatasetTriplet(datasets[1], False, True, 123)
             test_dataset = MolDatasetTriplet(datasets[2], False, True, 123)
         
