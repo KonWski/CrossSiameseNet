@@ -46,13 +46,15 @@ class MolDataset(Dataset):
 class MolDatasetTriplet(MolDataset):
 
     def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
-                 use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
+                 use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
+                 model = None):
         
         super().__init__(dc_dataset)
         self.train = train
         self.oversample = oversample
         self.use_fixed_triplets = use_fixed_triplets
         self.seed_fixed_triplets = seed_fixed_triplets
+        self.model = model
 
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
         indices_1 = (self.y == 1).nonzero()[:,0].tolist()
@@ -102,13 +104,7 @@ class MolDatasetTriplet(MolDataset):
             anchor_label = self.y[id0].item()
 
             # random positive and negative samples
-            if anchor_label == 1:
-                positive_index = random.choice(self.indices_1)
-                negative_index = random.choice(self.indices_0)
-            
-            else:
-                positive_index = random.choice(self.indices_0)
-                negative_index = random.choice(self.indices_1)
+            positive_index, negative_index = self.__get_tougher_observations(anchor_label, anchor_mf)
 
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
@@ -147,8 +143,32 @@ class MolDatasetTriplet(MolDataset):
         return [anchor_mf, positive_mf, negative_mf, self.y]
     
 
-    def get_pos_weights(self):
-        return torch.tensor([1, len(self.indices_0) / len(self.indices_1)])
+    def __get_tougher_observations(self, anchor_label, anchor_mf):
+
+        anchor_mf_transformed = self.model(anchor_mf)
+
+        if anchor_label == 1:
+            positive_indices = random.sample(self.indices_1, k=3)
+            negative_indices = random.sample(self.indices_0, k=3)
+        
+        else:
+            positive_indices = random.sample(self.indices_0, k=3)
+            negative_indices = random.sample(self.indices_1, k=3)
+
+        # find toughest positive and negative observation
+        min_dist = -1, 
+        for index in positive_indices:
+            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, self.model(self.X[index]))
+            if dist > min_dist:
+                positive_index = index
+
+        min_dist = -1, 
+        for index in negative_indices:
+            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, self.model(self.X[index]))
+            if dist > min_dist:
+                negative_index = index
+
+        return positive_index, negative_index
 
 
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):

@@ -12,6 +12,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False):
     
     model = model.to(device)
+    train_loader.dataset.model = model
     optimizer = Adam(model.parameters(), lr=1e-5)    
     criterion_triplet_loss = nn.TripletMarginLoss(margin=3, reduction="sum")
 
@@ -53,7 +54,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     if state == "train":
                         loss.backward()
                         optimizer.step()
-                
+                        train_loader.dataset.model = model
+
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
