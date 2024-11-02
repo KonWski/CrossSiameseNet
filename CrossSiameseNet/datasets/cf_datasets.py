@@ -146,8 +146,7 @@ class MolDatasetTriplet(MolDataset):
 
     def __get_tougher_observations(self, anchor_label, anchor_mf):
         
-        anchor_mf = anchor_mf.to(self.device)
-        print(f"anchor_mf.shape: {anchor_mf.shape}")
+        anchor_mf = anchor_mf.unsqueeze(dim=0).to(self.device)
         anchor_mf_transformed = self.model(anchor_mf)
 
         if anchor_label == 1:
@@ -161,14 +160,14 @@ class MolDatasetTriplet(MolDataset):
         # find toughest positive and negative observation
         min_dist = -1, 
         for index in positive_indices:
-            positive_mf = self.model(self.X[index].to(self.device))
+            positive_mf = self.model(self.X[index].unsqueeze(dim=0).to(self.device))
             dist = torch.nn.PairwiseDistance(anchor_mf_transformed, positive_mf)
             if dist > min_dist:
                 positive_index = index
 
         min_dist = -1, 
         for index in negative_indices:
-            negative_mf = self.model(self.X[index].to(self.device))
+            negative_mf = self.model(self.X[index].unsqueeze(dim=0).to(self.device))
             dist = torch.nn.PairwiseDistance(anchor_mf_transformed, negative_mf)
             if dist > min_dist:
                 negative_index = index
