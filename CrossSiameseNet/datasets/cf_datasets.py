@@ -26,7 +26,7 @@ class MolDataset(Dataset):
         self.n_molecules = len(self.smiles)
 
     def __len__(self):
-        return self.n_molecules
+        return len(self.y)
 
     def __getitem__(self, id0):
 
