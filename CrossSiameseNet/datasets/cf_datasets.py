@@ -45,7 +45,7 @@ class MolDataset(Dataset):
 
 class MolDatasetTriplet(MolDataset):
 
-    def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: bool = False, 
+    def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None):
         
         super().__init__(dc_dataset)
@@ -59,8 +59,6 @@ class MolDatasetTriplet(MolDataset):
 
         if self.oversample and not self.use_fixed_triplets:
 
-            oversampling_multiplicator = int(len(indices_0) / len(indices_1))
-
             X_0 = self.X[indices_0]
             X_1 = self.X[indices_1]
             y_0 = self.y[indices_0]
@@ -68,9 +66,9 @@ class MolDatasetTriplet(MolDataset):
             smiles_0 = self.smiles[indices_0]
             smiles_1 = self.smiles[indices_1]
 
-            oversampled_X_1 = torch.cat([X_1 for i in range(oversampling_multiplicator)])
-            oversampled_y_1 = torch.cat([y_1 for i in range(oversampling_multiplicator)])
-            oversampled_smiles_1 = np.concatenate([smiles_1 for i in range(oversampling_multiplicator)])
+            oversampled_X_1 = torch.cat([X_1 for i in range(self.oversample)])
+            oversampled_y_1 = torch.cat([y_1 for i in range(self.oversample)])
+            oversampled_smiles_1 = np.concatenate([smiles_1 for i in range(self.oversample)])
 
             self.X = torch.cat([X_0, oversampled_X_1])
             self.y = torch.cat([y_0, oversampled_y_1])
@@ -159,7 +157,7 @@ class MolDatasetTriplet(MolDataset):
 
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
-                triplet_loss = False, oversample: bool = False, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
+                triplet_loss = False, oversample: int = None, use_fixed_train_triplets: bool = False, seed_fixed_train_triplets: int = None):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
