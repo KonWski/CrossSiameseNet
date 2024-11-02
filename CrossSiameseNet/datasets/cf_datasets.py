@@ -146,7 +146,7 @@ class MolDatasetTriplet(MolDataset):
         positive_mf = self.X[positive_indices]
         negative_mf = self.X[negative_indices]
 
-        return [anchor_mf, positive_mf, negative_mf, anchor_label]
+        return [anchor_mf, positive_mf, negative_mf, self.y]
     
 
     def get_pos_weights(self):
