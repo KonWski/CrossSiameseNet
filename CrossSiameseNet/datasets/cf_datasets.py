@@ -47,7 +47,7 @@ class MolDatasetTriplet(MolDataset):
 
     def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
-                 model = None):
+                 model = None, device = None):
         
         super().__init__(dc_dataset)
         self.train = train
@@ -55,6 +55,7 @@ class MolDatasetTriplet(MolDataset):
         self.use_fixed_triplets = use_fixed_triplets
         self.seed_fixed_triplets = seed_fixed_triplets
         self.model = model
+        self.device = device
 
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
         indices_1 = (self.y == 1).nonzero()[:,0].tolist()
@@ -144,7 +145,8 @@ class MolDatasetTriplet(MolDataset):
     
 
     def __get_tougher_observations(self, anchor_label, anchor_mf):
-
+        
+        anchor_mf = anchor_mf.to(self.device)
         anchor_mf_transformed = self.model(anchor_mf)
 
         if anchor_label == 1:
@@ -158,13 +160,15 @@ class MolDatasetTriplet(MolDataset):
         # find toughest positive and negative observation
         min_dist = -1, 
         for index in positive_indices:
-            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, self.model(self.X[index]))
+            positive_mf = self.model(self.X[index].to(self.device))
+            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, positive_mf)
             if dist > min_dist:
                 positive_index = index
 
         min_dist = -1, 
         for index in negative_indices:
-            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, self.model(self.X[index]))
+            negative_mf = self.model(self.X[index].to(self.device))
+            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, negative_mf)
             if dist > min_dist:
                 negative_index = index
 
