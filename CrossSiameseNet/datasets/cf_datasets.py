@@ -88,8 +88,7 @@ class MolDatasetTriplet(MolDataset):
             self.indices_1 = indices_1_temp.nonzero()[:,0].tolist()
 
         elif self.oversample and self.use_fixed_triplets:
-            logging.warning(f"MolDatasetTriplet initiated with wrong parameters: oversample(value: {self.oversample})
-                             and use_fixed_triplets(value: {self.use_fixed_triplets})")
+            logging.warning(f"MolDatasetTriplet initiated with wrong parameters: oversample(value: {self.oversample}) and use_fixed_triplets(value: {self.use_fixed_triplets})")
 
         # set stable test triplets for repeatance
         elif self.use_fixed_triplets:
