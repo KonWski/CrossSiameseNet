@@ -39,7 +39,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 model.eval()
 
             for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
-                print(anchor_mf.shape)
+
                 with torch.set_grad_enabled(state == 'train'):
                     
                     anchor_mf, positive_mf, negative_mf, anchor_label = anchor_mf.to(device), positive_mf.to(device), \
