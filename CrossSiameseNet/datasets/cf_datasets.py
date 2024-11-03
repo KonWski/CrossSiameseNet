@@ -146,8 +146,11 @@ class MolDatasetTriplet(MolDataset):
 
     def __get_tougher_observations(self, anchor_label, anchor_mf):
         
-        anchor_mf = anchor_mf.unsqueeze(dim=0).to(self.device)
+        # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
+        anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
+        print(f"Before model: {anchor_mf.shape}")
         anchor_mf_transformed = self.model(anchor_mf)
+        print(f"After model: {anchor_mf.shape}")
 
         if anchor_label == 1:
             positive_indices = random.sample(self.indices_1, k=3)
@@ -157,10 +160,20 @@ class MolDatasetTriplet(MolDataset):
             positive_indices = random.sample(self.indices_0, k=3)
             negative_indices = random.sample(self.indices_1, k=3)
 
+        positive_mfs = self.X[positive_indices]
+        print(f"positive_mfs.shape: {positive_mfs.shape}")
+        negative_mfs = self.X[negative_indices]
+        print(f"negative_mfs.shape: {negative_mfs.shape}")
+
+        positive_mfs = self.model(positive_mfs.to(self.device))
+        print(f"positive_mfs.shape: {positive_mfs.shape}")
+        negative_mfs = self.model(negative_mfs.to(self.device))
+        print(f"negative_mfs.shape: {negative_mfs.shape}")
+
+
         # find toughest positive and negative observation
         min_dist = -1 
         for index in positive_indices:
-
             positive_mf = self.model(self.X[index].unsqueeze(dim=0).to(self.device))
             dist = torch.nn.PairwiseDistance(anchor_mf_transformed, positive_mf)
             if dist > min_dist:
