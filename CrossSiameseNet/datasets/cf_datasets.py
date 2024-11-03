@@ -156,8 +156,8 @@ class MolDatasetTriplet(MolDataset):
         return [anchor_mf, positive_mf, negative_mf, self.y]
     
 
-    def __get_tougher_observations(self, anchor_label, anchor_mf):
-        
+    def __get_tougher_observations(self, anchor_label, anchor_mf, k=6):
+        print(f"__get_tougher_observations initiated")
         # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
         if len(anchor_mf) == 1:
             anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
@@ -166,12 +166,12 @@ class MolDatasetTriplet(MolDataset):
             anchor_mf_transformed = self.model(anchor_mf)
 
         if anchor_label == 1:
-            positive_indices = random.sample(self.indices_1, k=3)
-            negative_indices = random.sample(self.indices_0, k=3)
+            positive_indices = random.sample(self.indices_1, k=k)
+            negative_indices = random.sample(self.indices_0, k=k)
         
         else:
-            positive_indices = random.sample(self.indices_0, k=3)
-            negative_indices = random.sample(self.indices_1, k=3)
+            positive_indices = random.sample(self.indices_0, k=k)
+            negative_indices = random.sample(self.indices_1, k=k)
 
         positive_mfs = self.X[positive_indices]
         negative_mfs = self.X[negative_indices]
@@ -181,7 +181,7 @@ class MolDatasetTriplet(MolDataset):
 
         # find toughest positive and negative observation
         min_dist = -1 
-        for index in range(6):
+        for index in range(k):
             positive_mf = positive_mfs[index]
             dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
             if dist > min_dist:
@@ -189,7 +189,7 @@ class MolDatasetTriplet(MolDataset):
                 positive_index = index
 
         max_dist = float("inf") 
-        for index in range(6):
+        for index in range(k):
             negative_mf = negative_mfs[index]
             dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
             if dist < max_dist:
