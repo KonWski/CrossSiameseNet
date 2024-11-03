@@ -159,12 +159,8 @@ class MolDatasetTriplet(MolDataset):
     def __get_tougher_observations(self, anchor_label, anchor_mf, k=6):
 
         # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
-        print(anchor_mf.shape)
-        if len(anchor_mf) == 1:
-            anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
-            anchor_mf_transformed = self.model(anchor_mf)[0]
-        else:
-            anchor_mf_transformed = self.model(anchor_mf.to(self.device))
+        anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
+        anchor_mf_transformed = self.model(anchor_mf)[0]
 
         if anchor_label == 1:
             positive_indices = random.sample(self.indices_1, k=k)
