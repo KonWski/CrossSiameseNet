@@ -181,7 +181,7 @@ class MolDatasetTriplet(MolDataset):
 
         # find toughest positive and negative observation
         min_dist = -1 
-        for index in range(3):
+        for index in range(6):
             positive_mf = positive_mfs[index]
             dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
             if dist > min_dist:
@@ -189,7 +189,7 @@ class MolDatasetTriplet(MolDataset):
                 positive_index = index
 
         max_dist = float("inf") 
-        for index in range(3):
+        for index in range(6):
             negative_mf = negative_mfs[index]
             dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
             if dist < max_dist:
