@@ -56,6 +56,7 @@ class MolDatasetTriplet(MolDataset):
         self.seed_fixed_triplets = seed_fixed_triplets
         self.model = model
         self.device = device
+        self.euclidean_distance = torch.nn.PairwiseDistance(p=2)
 
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
         indices_1 = (self.y == 1).nonzero()[:,0].tolist()
@@ -174,7 +175,7 @@ class MolDatasetTriplet(MolDataset):
         min_dist = -1 
         for index in range(3):
             positive_mf = positive_mfs[index]
-            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, positive_mf)
+            dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
             if dist > min_dist:
                 min_dist = dist
                 positive_index = index
@@ -182,7 +183,7 @@ class MolDatasetTriplet(MolDataset):
         max_dist = float("inf") 
         for index in range(3):
             negative_mf = negative_mfs[index]
-            dist = torch.nn.PairwiseDistance(anchor_mf_transformed, negative_mf)
+            dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
             if dist < max_dist:
                 max_dist = dist
                 negative_index = index
