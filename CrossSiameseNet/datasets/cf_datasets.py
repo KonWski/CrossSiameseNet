@@ -163,7 +163,7 @@ class MolDatasetTriplet(MolDataset):
             anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
             anchor_mf_transformed = self.model(anchor_mf)[0]
         else:
-            anchor_mf_transformed = self.model(anchor_mf)
+            anchor_mf_transformed = self.model(anchor_mf.to(self.device))
 
         if anchor_label == 1:
             positive_indices = random.sample(self.indices_1, k=k)
