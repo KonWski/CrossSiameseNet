@@ -148,7 +148,7 @@ class MolDatasetTriplet(MolDataset):
 
     def __get_tougher_observations(self, anchor_label, anchor_mf):
         
-        anchor_mf = anchor_mf.to(self.device)
+        anchor_mf = anchor_mf.unsqueeze(dim=0).to(self.device)
         anchor_mf_transformed = self.model(anchor_mf)
 
         if anchor_label == 1:
