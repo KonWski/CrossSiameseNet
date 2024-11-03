@@ -105,9 +105,7 @@ class MolDatasetTriplet(MolDataset):
             anchor_label = self.y[id0].item()
 
             # random positive and negative samples
-            # positive_index, negative_index = self.__get_tougher_observations(anchor_label, anchor_mf)
-            positive_index = 0
-            negative_index = 1
+            positive_index, negative_index = self.__get_tougher_observations(anchor_label, anchor_mf)
 
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
