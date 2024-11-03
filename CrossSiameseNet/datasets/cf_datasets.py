@@ -158,18 +158,20 @@ class MolDatasetTriplet(MolDataset):
             negative_indices = random.sample(self.indices_1, k=3)
 
         # find toughest positive and negative observation
-        min_dist = -1, 
+        min_dist = -1 
         for index in positive_indices:
             positive_mf = self.model(self.X[index].unsqueeze(dim=0).to(self.device))
             dist = torch.nn.PairwiseDistance(anchor_mf_transformed, positive_mf)
             if dist > min_dist:
+                min_dist = dist
                 positive_index = index
 
-        min_dist = -1, 
+        max_dist = float("inf") 
         for index in negative_indices:
             negative_mf = self.model(self.X[index].unsqueeze(dim=0).to(self.device))
             dist = torch.nn.PairwiseDistance(anchor_mf_transformed, negative_mf)
-            if dist > min_dist:
+            if dist < max_dist:
+                max_dist = dist
                 negative_index = index
 
         return positive_index, negative_index
