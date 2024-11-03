@@ -107,7 +107,7 @@ class MolDatasetTriplet(MolDataset):
             anchor_label = self.y[id0].item()
 
             # random positive and negative samples
-            if self.train == "hard_batch_learning":
+            if self.training_type == "hard_batch_learning":
                 positive_index, negative_index = self.__get_tougher_observations(anchor_label, anchor_mf)
 
             else:
@@ -157,7 +157,7 @@ class MolDatasetTriplet(MolDataset):
     
 
     def __get_tougher_observations(self, anchor_label, anchor_mf, k=6):
-        print(f"__get_tougher_observations initiated")
+
         # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
         if len(anchor_mf) == 1:
             anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
