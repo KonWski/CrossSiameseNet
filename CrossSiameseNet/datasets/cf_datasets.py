@@ -240,7 +240,7 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets, training_type)
+            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets, training_type = training_type)
             valid_dataset = MolDatasetTriplet(datasets[1], False, False, True, 123)
             test_dataset = MolDatasetTriplet(datasets[2], False, False, True, 123)
         
