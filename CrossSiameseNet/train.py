@@ -38,7 +38,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             else:
                 model.eval()
 
-            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
+            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label, already_transformed_mfs) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
                     
@@ -46,11 +46,12 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                         negative_mf.to(device), anchor_label.to(device)
                     optimizer.zero_grad()
 
-                    outputs_anchor = model(anchor_mf)
-                    outputs_positive = model(positive_mf)
-                    outputs_negative = model(negative_mf)
+                    if not already_transformed_mfs:
+                        anchor_mf = model(anchor_mf)
+                        positive_mf = model(positive_mf)
+                        negative_mf = model(negative_mf)
 
-                    loss = criterion_triplet_loss(outputs_anchor, outputs_positive, outputs_negative)
+                    loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf)
 
                     if state == "train":
                         loss.backward()
