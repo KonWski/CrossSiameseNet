@@ -45,9 +45,11 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     anchor_mf, positive_mf, negative_mf, anchor_label = anchor_mf.to(device), positive_mf.to(device), \
                         negative_mf.to(device), anchor_label.to(device)
                     optimizer.zero_grad()
-                    print(f"anchor_mf.shape: {anchor_mf.shape}")
 
                     if not already_transformed_mfs[0].item():
+                        print("Not omitting model transformation")
+                        print(f"already_transformed_mfs[0].item(): {already_transformed_mfs[0].item()}")
+                        print(f"already_transformed_mfs: {already_transformed_mfs}")
                         anchor_mf = model(anchor_mf)
                         positive_mf = model(positive_mf)
                         negative_mf = model(negative_mf)
