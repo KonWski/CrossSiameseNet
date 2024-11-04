@@ -47,7 +47,8 @@ class MolDatasetTriplet(MolDataset):
 
     def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
-                 model = None, device = None, training_type: str = "hard_batch_learning"):
+                 model = None, device = None, training_type: str = "hard_batch_learning",
+                 k_hard_batch_learning: int = 6):
         
         super().__init__(dc_dataset)
         self.train = train
@@ -57,6 +58,7 @@ class MolDatasetTriplet(MolDataset):
         self.model = model
         self.device = device
         self.training_type = training_type
+        self.k_hard_batch_learning = k_hard_batch_learning
         self.euclidean_distance = torch.nn.PairwiseDistance(p=2)
 
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
@@ -108,9 +110,11 @@ class MolDatasetTriplet(MolDataset):
 
             # random positive and negative samples
             if self.training_type == "hard_batch_learning":
-                positive_index, negative_index = self.__get_tougher_observations(anchor_label, anchor_mf)
+                anchor_mf, positive_mf, negative_mf = self.__get_tougher_observations(anchor_label, anchor_mf, self.k_hard_batch_learning)
+                already_transformed_mfs = True
 
             else:
+
                 if anchor_label == 1:
                     positive_index = random.choice(self.indices_1)
                     negative_index = random.choice(self.indices_0)
@@ -119,14 +123,16 @@ class MolDatasetTriplet(MolDataset):
                     positive_index = random.choice(self.indices_0)
                     negative_index = random.choice(self.indices_1)
 
-            positive_mf = self.X[positive_index]
-            negative_mf = self.X[negative_index]
+                already_transformed_mfs = False
+                positive_mf = self.X[positive_index]
+                negative_mf = self.X[negative_index]
 
         else:            
+            already_transformed_mfs = False
             anchor_mf, positive_mf, negative_mf, anchor_label = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], \
                 self.fixed_triplets[2][id0], self.fixed_triplets[3][id0]
 
-        return anchor_mf, positive_mf, negative_mf, anchor_label
+        return anchor_mf, positive_mf, negative_mf, anchor_label, already_transformed_mfs
 
 
     def __get_fixed_dataset(self):
@@ -193,8 +199,8 @@ class MolDatasetTriplet(MolDataset):
                 max_dist = dist
                 negative_index = index
 
-        return positive_index, negative_index
-
+        # return positive_index, negative_index
+        return anchor_mf_transformed, positive_mfs[positive_index], negative_mfs[negative_index]
 
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
         self.seed_fixed_triplets = seed_fixed_triplets
@@ -203,7 +209,7 @@ class MolDatasetTriplet(MolDataset):
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
                 triplet_loss = False, oversample: int = None, use_fixed_train_triplets: bool = False, 
-                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning"):
+                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning", k_hard_batch_learning: int = 6):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -240,7 +246,8 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets, training_type = training_type)
+            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets, 
+                                              training_type = training_type, k_hard_batch_learning = k_hard_batch_learning)
             valid_dataset = MolDatasetTriplet(datasets[1], False, False, True, 123)
             test_dataset = MolDatasetTriplet(datasets[2], False, False, True, 123)
         
