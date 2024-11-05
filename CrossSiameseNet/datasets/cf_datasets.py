@@ -110,7 +110,11 @@ class MolDatasetTriplet(MolDataset):
 
             # random positive and negative samples
             if self.training_type == "hard_batch_learning":
-                anchor_mf, positive_mf, negative_mf = self.__get_tougher_observations(anchor_label, anchor_mf, self.k_hard_batch_learning)
+                anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning(anchor_label, anchor_mf, self.k_hard_batch_learning)
+                already_transformed_mfs = True
+
+            elif self.training_type == "hard_batch_learning_only_positives":
+                anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning_only_positives(anchor_label, anchor_mf, self.k_hard_batch_learning)
                 already_transformed_mfs = True
 
             else:
@@ -162,7 +166,61 @@ class MolDatasetTriplet(MolDataset):
         return [anchor_mf, positive_mf, negative_mf, self.y]
     
 
-    def __get_tougher_observations(self, anchor_label, anchor_mf, k=6):
+    def __hard_batch_learning_only_positives(self, anchor_label, anchor_mf, k=6):
+
+        # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
+        anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
+        anchor_mf_transformed = self.model(anchor_mf)[0]
+
+        # looking for toughest negative and positive samples for positive anchor
+        if anchor_label == 1:
+            positive_indices = random.sample(self.indices_1, k=k)
+            negative_indices = random.sample(self.indices_0, k=k)
+
+            positive_mfs = self.X[positive_indices]
+            negative_mfs = self.X[negative_indices]
+
+            positive_mfs = self.model(positive_mfs.to(self.device))
+            negative_mfs = self.model(negative_mfs.to(self.device))
+
+            # find toughest positive and negative observation
+            min_dist = -1 
+            for index in range(k):
+                positive_mf = positive_mfs[index]
+                dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
+                if dist > min_dist:
+                    min_dist = dist
+                    positive_index = index
+
+            max_dist = float("inf") 
+            for index in range(k):
+                negative_mf = negative_mfs[index]
+                dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
+                if dist < max_dist:
+                    max_dist = dist
+                    negative_index = index
+
+            positive_mf = positive_mfs[positive_index]
+            negative_mf = negative_mfs[negative_index]
+
+        # random positive and negative observations
+        else:
+
+            positive_index = random.choice(self.indices_0)
+            negative_index = random.choice(self.indices_1)
+
+            positive_mf = self.X[positive_index]
+            negative_mf = self.X[negative_index]
+
+            positive_mf = self.model(positive_mf.unsqueeze(dim=0).to(self.device))
+            negative_mf = self.model(negative_mf.unsqueeze(dim=0).to(self.device))
+
+
+        # return positive_index, negative_index
+        return anchor_mf_transformed, positive_mf, negative_mf
+
+
+    def __hard_batch_learning(self, anchor_label, anchor_mf, k=6):
 
         # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
         anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
@@ -201,6 +259,7 @@ class MolDatasetTriplet(MolDataset):
 
         # return positive_index, negative_index
         return anchor_mf_transformed, positive_mfs[positive_index], negative_mfs[negative_index]
+
 
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
         self.seed_fixed_triplets = seed_fixed_triplets
