@@ -212,9 +212,11 @@ class MolDatasetTriplet(MolDataset):
             positive_mf = self.X[positive_index]
             negative_mf = self.X[negative_index]
 
-            positive_mf = self.model(positive_mf.unsqueeze(dim=0).to(self.device))
-            negative_mf = self.model(negative_mf.unsqueeze(dim=0).to(self.device))
+            positive_mf = torch.stack([positive_mf for i in range(2)], dim=0).to(self.device)
+            negative_mf = torch.stack([negative_mf for i in range(2)], dim=0).to(self.device)
 
+            positive_mf = self.model(positive_mf)[0]
+            negative_mf = self.model(negative_mf)[0]
 
         # return positive_index, negative_index
         return anchor_mf_transformed, positive_mf, negative_mf
