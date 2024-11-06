@@ -110,11 +110,17 @@ class MolDatasetTriplet(MolDataset):
 
             # random positive and negative samples
             if self.training_type == "hard_batch_learning":
+                print(f"Entering training type: {self.training_type}")
                 anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning(anchor_label, anchor_mf, self.k_hard_batch_learning)
                 already_transformed_mfs = True
 
             elif self.training_type == "hard_batch_learning_only_positives":
+                print(f"Entering training type: {self.training_type}")
                 anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning_only_positives(anchor_label, anchor_mf, self.k_hard_batch_learning)
+                print(f"anchor_mf.shape: {anchor_mf.shape}")
+                print(f"positive_mf.shape: {positive_mf.shape}")
+                print(f"negative_mf.shape: {negative_mf.shape}")
+
                 already_transformed_mfs = True
 
             else:
@@ -171,17 +177,28 @@ class MolDatasetTriplet(MolDataset):
         # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
         anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
         anchor_mf_transformed = self.model(anchor_mf)[0]
+        print(f"anchor_label: {anchor_label}")
 
         # looking for toughest negative and positive samples for positive anchor
         if anchor_label == 1:
+            
+            print("Processing anchor label 1")
             positive_indices = random.sample(self.indices_1, k=k)
             negative_indices = random.sample(self.indices_0, k=k)
+            print(f"len(positive_indices): {len(positive_indices)}")
+            print(f"len(negative_indices): {len(negative_indices)}")
 
             positive_mfs = self.X[positive_indices]
             negative_mfs = self.X[negative_indices]
+            print("BEFORE MODEL")
+            print(f"positive_mfs.shape: {positive_mfs.shape}")
+            print(f"negative_mfs.shape: {negative_mfs.shape}")
 
             positive_mfs = self.model(positive_mfs.to(self.device))
             negative_mfs = self.model(negative_mfs.to(self.device))
+            print(f"positive_mfs.shape: {positive_mfs.shape}")
+            print(f"negative_mfs.shape: {negative_mfs.shape}")
+            print("AFTER MODEL")
 
             # find toughest positive and negative observation
             min_dist = -1 
@@ -189,19 +206,27 @@ class MolDatasetTriplet(MolDataset):
                 positive_mf = positive_mfs[index]
                 dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
                 if dist > min_dist:
+                    print(f"min_dist: {min_dist} --> dist: {dist}")
                     min_dist = dist
                     positive_index = index
+                print(f"min_dist: {min_dist}")
+                print(f"positive_index: {positive_index}")
 
             max_dist = float("inf") 
             for index in range(k):
                 negative_mf = negative_mfs[index]
                 dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
                 if dist < max_dist:
+                    print(f"max_dist: {max_dist} --> dist: {dist}")
                     max_dist = dist
                     negative_index = index
+                print(f"max_dist: {max_dist}")
+                print(f"negative_index: {negative_index}")
 
             positive_mf = positive_mfs[positive_index]
             negative_mf = negative_mfs[negative_index]
+            print(f"positive_mf.shape: {positive_mf.shape}")
+            print(f"negative_mf.shape: {negative_mf.shape}")
 
         # random positive and negative observations
         else:
