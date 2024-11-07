@@ -20,7 +20,7 @@ class BatchShaper:
 
         if self.training_type == "hard_batch_learning":
 
-            distances = torch.cdist(anchors_transformed)
+            distances = torch.cdist(anchors_transformed, anchors_transformed)
             positive_mfs_transformed = []
             negative_mfs_transformed = []
 
