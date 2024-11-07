@@ -47,19 +47,14 @@ class MolDatasetTriplet(MolDataset):
 
     def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
-                 model = None, device = None, training_type: str = "hard_batch_learning",
-                 k_hard_batch_learning: int = 6):
+                 training_type: str = "hard_batch_learning"):
         
         super().__init__(dc_dataset)
         self.train = train
         self.oversample = oversample
         self.use_fixed_triplets = use_fixed_triplets
         self.seed_fixed_triplets = seed_fixed_triplets
-        self.model = model
-        self.device = device
         self.training_type = training_type
-        self.k_hard_batch_learning = k_hard_batch_learning
-        self.euclidean_distance = torch.nn.PairwiseDistance(p=2)
 
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
         indices_1 = (self.y == 1).nonzero()[:,0].tolist()
@@ -89,8 +84,7 @@ class MolDatasetTriplet(MolDataset):
             self.indices_0 = indices_0
             self.indices_1 = indices_1
 
-        elif self.oversample and self.use_fixed_triplets:
-            
+        elif self.oversample and self.use_fixed_triplets:            
             raise Exception(f"MolDatasetTriplet initiated with wrong parameters: oversample(value: {self.oversample}) and use_fixed_triplets(value: {self.use_fixed_triplets})")
 
         # set stable test triplets for repeatance
@@ -109,19 +103,9 @@ class MolDatasetTriplet(MolDataset):
             anchor_label = self.y[id0].item()
 
             # random positive and negative samples
-            if self.training_type == "hard_batch_learning":
-                print(f"Entering training type: {self.training_type}")
-                anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning(anchor_label, anchor_mf, self.k_hard_batch_learning)
-                already_transformed_mfs = True
-
-            elif self.training_type == "hard_batch_learning_only_positives":
-                print(f"Entering training type: {self.training_type}")
-                anchor_mf, positive_mf, negative_mf = self.__hard_batch_learning_only_positives(anchor_label, anchor_mf, self.k_hard_batch_learning)
-                print(f"anchor_mf.shape: {anchor_mf.shape}")
-                print(f"positive_mf.shape: {positive_mf.shape}")
-                print(f"negative_mf.shape: {negative_mf.shape}")
-
-                already_transformed_mfs = True
+            if self.training_type == "hard_batch_learning" or self.training_type == "hard_batch_learning_only_positives":
+                positive_mf = None
+                negative_mf = None
 
             else:
 
@@ -133,16 +117,14 @@ class MolDatasetTriplet(MolDataset):
                     positive_index = random.choice(self.indices_0)
                     negative_index = random.choice(self.indices_1)
 
-                already_transformed_mfs = False
                 positive_mf = self.X[positive_index]
                 negative_mf = self.X[negative_index]
 
         else:            
-            already_transformed_mfs = False
             anchor_mf, positive_mf, negative_mf, anchor_label = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], \
                 self.fixed_triplets[2][id0], self.fixed_triplets[3][id0]
 
-        return anchor_mf, positive_mf, negative_mf, anchor_label, already_transformed_mfs
+        return anchor_mf, positive_mf, negative_mf, anchor_label
 
 
     def __get_fixed_dataset(self):
@@ -172,122 +154,6 @@ class MolDatasetTriplet(MolDataset):
         return [anchor_mf, positive_mf, negative_mf, self.y]
     
 
-    def __hard_batch_learning_only_positives(self, anchor_label, anchor_mf, k=6):
-
-        # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
-        anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
-        anchor_mf_transformed = self.model(anchor_mf)[0]
-        print(f"anchor_label: {anchor_label}")
-
-        # looking for toughest negative and positive samples for positive anchor
-        if anchor_label == 1:
-            
-            print("Processing anchor label 1")
-            positive_indices = random.sample(self.indices_1, k=k)
-            negative_indices = random.sample(self.indices_0, k=k)
-            print(f"len(positive_indices): {len(positive_indices)}")
-            print(f"len(negative_indices): {len(negative_indices)}")
-
-            positive_mfs = self.X[positive_indices]
-            negative_mfs = self.X[negative_indices]
-            print("BEFORE MODEL")
-            print(f"positive_mfs.shape: {positive_mfs.shape}")
-            print(f"negative_mfs.shape: {negative_mfs.shape}")
-
-            positive_mfs = self.model(positive_mfs.to(self.device))
-            negative_mfs = self.model(negative_mfs.to(self.device))
-            print(f"positive_mfs.shape: {positive_mfs.shape}")
-            print(f"negative_mfs.shape: {negative_mfs.shape}")
-            print("AFTER MODEL")
-
-            # find toughest positive and negative observation
-            min_dist = -1 
-            for index in range(k):
-                positive_mf = positive_mfs[index]
-                dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
-                if dist > min_dist:
-                    print(f"min_dist: {min_dist} --> dist: {dist}")
-                    min_dist = dist
-                    positive_index = index
-                print(f"min_dist: {min_dist}")
-                print(f"positive_index: {positive_index}")
-
-            max_dist = float("inf") 
-            for index in range(k):
-                negative_mf = negative_mfs[index]
-                dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
-                if dist < max_dist:
-                    print(f"max_dist: {max_dist} --> dist: {dist}")
-                    max_dist = dist
-                    negative_index = index
-                print(f"max_dist: {max_dist}")
-                print(f"negative_index: {negative_index}")
-
-            positive_mf = positive_mfs[positive_index]
-            negative_mf = negative_mfs[negative_index]
-            print(f"positive_mf.shape: {positive_mf.shape}")
-            print(f"negative_mf.shape: {negative_mf.shape}")
-
-        # random positive and negative observations
-        else:
-
-            positive_index = random.choice(self.indices_0)
-            negative_index = random.choice(self.indices_1)
-
-            positive_mf = self.X[positive_index]
-            negative_mf = self.X[negative_index]
-
-            positive_mf = torch.stack([positive_mf for i in range(2)], dim=0).to(self.device)
-            negative_mf = torch.stack([negative_mf for i in range(2)], dim=0).to(self.device)
-
-            positive_mf = self.model(positive_mf)[0]
-            negative_mf = self.model(negative_mf)[0]
-
-        # return positive_index, negative_index
-        return anchor_mf_transformed, positive_mf, negative_mf
-
-
-    def __hard_batch_learning(self, anchor_label, anchor_mf, k=6):
-
-        # anchor_mf needs to be stacked because of the batch norm that requires n > 1 obs
-        anchor_mf = torch.stack([anchor_mf for i in range(2)], dim=0).to(self.device)
-        anchor_mf_transformed = self.model(anchor_mf)[0]
-
-        if anchor_label == 1:
-            positive_indices = random.sample(self.indices_1, k=k)
-            negative_indices = random.sample(self.indices_0, k=k)
-        
-        else:
-            positive_indices = random.sample(self.indices_0, k=k)
-            negative_indices = random.sample(self.indices_1, k=k)
-
-        positive_mfs = self.X[positive_indices]
-        negative_mfs = self.X[negative_indices]
-
-        positive_mfs = self.model(positive_mfs.to(self.device))
-        negative_mfs = self.model(negative_mfs.to(self.device))
-
-        # find toughest positive and negative observation
-        min_dist = -1 
-        for index in range(k):
-            positive_mf = positive_mfs[index]
-            dist = self.euclidean_distance(anchor_mf_transformed, positive_mf).item()
-            if dist > min_dist:
-                min_dist = dist
-                positive_index = index
-
-        max_dist = float("inf") 
-        for index in range(k):
-            negative_mf = negative_mfs[index]
-            dist = self.euclidean_distance(anchor_mf_transformed, negative_mf).item()
-            if dist < max_dist:
-                max_dist = dist
-                negative_index = index
-
-        # return positive_index, negative_index
-        return anchor_mf_transformed, positive_mfs[positive_index], negative_mfs[negative_index]
-
-
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
         self.seed_fixed_triplets = seed_fixed_triplets
         self.fixed_triplets = self.__get_fixed_dataset()
@@ -295,7 +161,7 @@ class MolDatasetTriplet(MolDataset):
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
                 triplet_loss = False, oversample: int = None, use_fixed_train_triplets: bool = False, 
-                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning", k_hard_batch_learning: int = 6):
+                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning"):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -332,8 +198,8 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
 
         # convert DeepChems datasets to Torch wrappers
         if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, seed_fixed_train_triplets, 
-                                              training_type = training_type, k_hard_batch_learning = k_hard_batch_learning)
+            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, 
+                                              seed_fixed_train_triplets, training_type)
             valid_dataset = MolDatasetTriplet(datasets[1], False, False, True, 123)
             test_dataset = MolDatasetTriplet(datasets[2], False, False, True, 123)
         

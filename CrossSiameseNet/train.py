@@ -6,16 +6,16 @@ import logging
 from datetime import datetime
 import pandas as pd
 from CrossSiameseNet.checkpoints import save_checkpoint
-
+from CrossSiameseNet.BatchShaper import BatchShaper
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
-                  n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False):
+                  n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
+                  training_type: str = None):
     
     model = model.to(device)
-    train_loader.dataset.model = model
-    train_loader.dataset.device = device
     optimizer = Adam(model.parameters(), lr=1e-5)    
     criterion_triplet_loss = nn.TripletMarginLoss()
+    batch_shaper = BatchShaper(device, training_type)
 
     train_loss = []
     test_loss = []
@@ -38,25 +38,20 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             else:
                 model.eval()
 
-            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label, already_transformed_mfs) in enumerate(loader):
+            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
                     
-                    anchor_mf, positive_mf, negative_mf, anchor_label = anchor_mf.to(device), positive_mf.to(device), \
-                        negative_mf.to(device), anchor_label.to(device)
                     optimizer.zero_grad()
 
-                    if not already_transformed_mfs[0].item():
-                        anchor_mf = model(anchor_mf)
-                        positive_mf = model(positive_mf)
-                        negative_mf = model(negative_mf)
+                    anchor_mf, positive_mf, negative_mf, anchor_label \
+                        = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model)
 
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf)
 
                     if state == "train":
                         loss.backward()
                         optimizer.step()
-                        train_loader.dataset.model = model
 
                 running_loss += loss.item()
 
