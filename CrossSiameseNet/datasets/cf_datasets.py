@@ -102,10 +102,10 @@ class MolDatasetTriplet(MolDataset):
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
 
-            # random positive and negative samples
+            # dummy tensors
             if self.training_type == "hard_batch_learning" or self.training_type == "hard_batch_learning_only_positives":
-                positive_mf = None
-                negative_mf = None
+                positive_mf = torch.tensor([0])
+                negative_mf = torch.tensor([0])
 
             else:
 
