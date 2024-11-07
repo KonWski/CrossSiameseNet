@@ -88,4 +88,4 @@ class BatchShaper:
             negative_mfs_transformed = model(negative_mfs)
 
 
-        return anchors_transformed, anchor_labels, positive_mfs_transformed, negative_mfs_transformed
+        return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels
