@@ -52,7 +52,7 @@ class BatchShaper:
 
             elif self.training_type == "hard_batch_learning_only_positives":
 
-                distances = torch.cdist(anchors_transformed)
+                distances = torch.cdist(anchors_transformed, anchors_transformed)
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
 
@@ -82,7 +82,7 @@ class BatchShaper:
 
             elif self.training_type == "semi_hard_negative_mining":
 
-                distances = torch.cdist(anchors_transformed)
+                distances = torch.cdist(anchors_transformed, anchors_transformed)
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
                 n_anchors_switched_to_hard_batch_1 = 0
