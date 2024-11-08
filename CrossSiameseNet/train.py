@@ -45,7 +45,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     optimizer.zero_grad()
 
                     anchor_mf, positive_mf, negative_mf, anchor_label \
-                        = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model)
+                        = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
 
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf)
 

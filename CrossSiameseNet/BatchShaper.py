@@ -8,7 +8,7 @@ class BatchShaper:
         self.device = device
         self.training_type = training_type
 
-    def shape_batch(self, anchors_mf, positive_mfs, negative_mfs, anchor_labels, model):
+    def shape_batch(self, anchors_mf, positive_mfs, negative_mfs, anchor_labels, model, state):
 
         indices_1 = (anchor_labels == 1).nonzero()[:,0].tolist()
         indices_0 = (anchor_labels == 0).nonzero()[:,0].tolist()
@@ -18,74 +18,82 @@ class BatchShaper:
         anchors_transformed_1 = anchors_transformed[indices_1,:]
         anchors_transformed_0 = anchors_transformed[indices_0,:]
 
-        if self.training_type == "hard_batch_learning":
+        if state == "train":
 
-            distances = torch.cdist(anchors_transformed, anchors_transformed)
-            positive_mfs_transformed = []
-            negative_mfs_transformed = []
+            if self.training_type == "hard_batch_learning":
 
-            for anchor_iter in range(len(anchors_transformed)):
+                distances = torch.cdist(anchors_transformed, anchors_transformed)
+                positive_mfs_transformed = []
+                negative_mfs_transformed = []
 
-                anchor_label = anchor_labels[anchor_iter]
+                for anchor_iter in range(len(anchors_transformed)):
 
-                if anchor_label == 0:
-                    distances_pos = distances[anchor_iter, indices_0]
-                    distances_neg = distances[anchor_iter, indices_1]
-                    id_distance_pos_max = distances_pos.argmax().item()
-                    id_distance_neg_min = distances_neg.argmin().item()
-                    positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos_max, :])
-                    negative_mfs_transformed.append(anchors_transformed_1[id_distance_neg_min, :])
+                    anchor_label = anchor_labels[anchor_iter]
 
-                elif anchor_label == 1:
-                    distances_pos = distances[anchor_iter, indices_1]
-                    distances_neg = distances[anchor_iter, indices_0]
-                    id_distance_pos_max = distances_pos.argmax().item()
-                    id_distance_neg_min = distances_neg.argmin().item()
-                    positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos_max, :])
-                    negative_mfs_transformed.append(anchors_transformed_0[id_distance_neg_min, :])
+                    if anchor_label == 0:
+                        distances_pos = distances[anchor_iter, indices_0]
+                        distances_neg = distances[anchor_iter, indices_1]
+                        id_distance_pos_max = distances_pos.argmax().item()
+                        id_distance_neg_min = distances_neg.argmin().item()
+                        positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos_max, :])
+                        negative_mfs_transformed.append(anchors_transformed_1[id_distance_neg_min, :])
 
-            positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
-            negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
+                    elif anchor_label == 1:
+                        distances_pos = distances[anchor_iter, indices_1]
+                        distances_neg = distances[anchor_iter, indices_0]
+                        id_distance_pos_max = distances_pos.argmax().item()
+                        id_distance_neg_min = distances_neg.argmin().item()
+                        positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos_max, :])
+                        negative_mfs_transformed.append(anchors_transformed_0[id_distance_neg_min, :])
 
-        elif self.training_type == "hard_batch_learning_only_positives":
+                positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
+                negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
 
-            distances = torch.cdist(anchors_transformed)
-            positive_mfs_transformed = []
-            negative_mfs_transformed = []
+            elif self.training_type == "hard_batch_learning_only_positives":
 
-            for anchor_iter in range(len(anchors_transformed)):
+                distances = torch.cdist(anchors_transformed)
+                positive_mfs_transformed = []
+                negative_mfs_transformed = []
 
-                anchor_label = anchor_labels[anchor_iter]
+                for anchor_iter in range(len(anchors_transformed)):
 
-                if anchor_label == 0:
+                    anchor_label = anchor_labels[anchor_iter]
 
-                    distances_pos = distances[anchor_iter, indices_0]
-                    distances_neg = distances[anchor_iter, indices_1]
-                    id_distance_pos = random.choice(indices_0)
-                    id_distance_neg = random.choice(indices_1)
-                    positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos, :])
-                    negative_mfs_transformed.append(anchors_transformed_1[id_distance_neg, :])
+                    if anchor_label == 0:
 
-                elif anchor_label == 1:
-                    distances_pos = distances[anchor_iter, indices_1]
-                    distances_neg = distances[anchor_iter, indices_0]
-                    id_distance_pos_max = distances_pos.argmax().item()
-                    id_distance_neg_min = distances_neg.argmin().item()
-                    positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos_max, :])
-                    negative_mfs_transformed.append(anchors_transformed_0[id_distance_neg_min, :])
+                        distances_pos = distances[anchor_iter, indices_0]
+                        distances_neg = distances[anchor_iter, indices_1]
+                        id_distance_pos = random.choice(indices_0)
+                        id_distance_neg = random.choice(indices_1)
+                        positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos, :])
+                        negative_mfs_transformed.append(anchors_transformed_1[id_distance_neg, :])
 
-            positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
-            negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
+                    elif anchor_label == 1:
+                        distances_pos = distances[anchor_iter, indices_1]
+                        distances_neg = distances[anchor_iter, indices_0]
+                        id_distance_pos_max = distances_pos.argmax().item()
+                        id_distance_neg_min = distances_neg.argmin().item()
+                        positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos_max, :])
+                        negative_mfs_transformed.append(anchors_transformed_0[id_distance_neg_min, :])
 
-        elif self.training_type == "hard_batch_learning_only_positives":
-            raise Exception("Training type {self.training_type} under construction")
+                positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
+                negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
 
-        else:
-            positive_mfs = positive_mfs.to(self.device)
-            negative_mfs = negative_mfs.to(self.device)
+            elif self.training_type == "hard_batch_learning_only_positives":
+                raise Exception("Training type {self.training_type} under construction")
 
-            positive_mfs_transformed = model(positive_mfs)
-            negative_mfs_transformed = model(negative_mfs)
+            else:
+                positive_mfs = positive_mfs.to(self.device)
+                negative_mfs = negative_mfs.to(self.device)
 
+                positive_mfs_transformed = model(positive_mfs)
+                negative_mfs_transformed = model(negative_mfs)
+
+        elif state == "test":
+                positive_mfs = positive_mfs.to(self.device)
+                negative_mfs = negative_mfs.to(self.device)
+
+                positive_mfs_transformed = model(positive_mfs)
+                negative_mfs_transformed = model(negative_mfs)
 
         return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels
