@@ -10,12 +10,12 @@ from CrossSiameseNet.BatchShaper import BatchShaper
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
-                  training_type: str = None):
+                  training_type: str = None, alpha: float = None):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
     criterion_triplet_loss = nn.TripletMarginLoss()
-    batch_shaper = BatchShaper(device, training_type)
+    batch_shaper = BatchShaper(device, training_type, alpha)
 
     train_loss = []
     test_loss = []

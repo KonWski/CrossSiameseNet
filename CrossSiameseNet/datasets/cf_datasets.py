@@ -103,7 +103,7 @@ class MolDatasetTriplet(MolDataset):
             anchor_label = self.y[id0].item()
 
             # dummy tensors
-            if self.training_type == "hard_batch_learning" or self.training_type == "hard_batch_learning_only_positives":
+            if self.training_type in ["hard_batch_learning", "hard_batch_learning_only_positives", "semi_hard_negative_mining"]:
                 positive_mf = torch.tensor([0])
                 negative_mf = torch.tensor([0])
 
