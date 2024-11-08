@@ -123,7 +123,7 @@ class BatchShaper:
                         distances_pos = distances[anchor_iter, indices_1]
                         distances_neg = distances[anchor_iter, indices_0]
 
-                        id_distance_pos = random.choice(indices_1)
+                        id_distance_pos = random.randrange(len(distances_pos))
                         distance_pos = distances_pos[id_distance_pos]
                         positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos, :])
 
