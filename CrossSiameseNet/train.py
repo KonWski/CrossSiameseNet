@@ -7,6 +7,8 @@ from datetime import datetime
 import pandas as pd
 from CrossSiameseNet.checkpoints import save_checkpoint
 from CrossSiameseNet.BatchShaper import BatchShaper
+from CrossSiameseNet.loss import WeightedTripletMarginLoss
+
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
@@ -14,7 +16,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
-    criterion_triplet_loss = nn.TripletMarginLoss()
+    # criterion_triplet_loss = nn.TripletMarginLoss()
+    weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
+    criterion_triplet_loss = WeightedTripletMarginLoss(weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
 
     train_loss = []

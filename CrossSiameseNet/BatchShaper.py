@@ -182,4 +182,4 @@ class BatchShaper:
         distances_0_1 = distances[indices_1, indices_0]
         distances_0_1_mean = torch.mean(distances_0_1)
 
-        logging.info(f"distances_1_1_mean: {distances_1_1_mean}, distances_0_0_mean: {distances_0_0_mean}, distances_0_1_mean = torch.mean(distances_0_1): {distances_0_1_mean = torch.mean(distances_0_1)}")
+        logging.info(f"distances_1_1_mean: {distances_1_1_mean}, distances_0_0_mean: {distances_0_0_mean}, distances_0_1_mean = torch.mean(distances_0_1): {distances_0_1_mean}")
