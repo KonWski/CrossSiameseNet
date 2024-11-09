@@ -18,7 +18,6 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     optimizer = Adam(model.parameters(), lr=1e-5)    
     # criterion_triplet_loss = nn.TripletMarginLoss()
     weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
-    print(f"weights_1: {weights_1}")
     criterion_triplet_loss = WeightedTripletMarginLoss(weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
 
