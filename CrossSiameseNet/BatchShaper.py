@@ -172,8 +172,13 @@ class BatchShaper:
     
 
     def log_distances(self, distances, indices_0, indices_1):
+        
+        print(f"distances.shape: {distances.shape}")
+        print(f"len(indices_1): {len(indices_1)}")
+        print(f"len(indices_0): {len(indices_0)}")
 
         distances_1_1 = distances[indices_1, indices_1]
+        print(f"distances_1_1.shape: {distances_1_1.shape}")
         distances_1_1_mean = torch.mean(distances_1_1)
 
         distances_0_0 = distances[indices_0, indices_0]
