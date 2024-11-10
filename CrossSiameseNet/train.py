@@ -67,8 +67,13 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
+            print(distances_1_1_means)
+            epoch_distances_1_1 = round(np.average(distances_1_1_means), 5)
+            epoch_distances_0_1 = round(np.average(distances_0_1_means), 5)
+            epoch_distances_0_0 = round(np.average(distances_0_0_means), 5)
+
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-            logging.info(f"distances_1_1_means: {np.average(distances_1_1_means)}, distances_0_1_means: {np.average(distances_0_1_means)}, distances_0_0_means: {np.average(distances_0_0_means)}")
+            logging.info(f"distances_1_1: {epoch_distances_1_1}, distances_0_1: {epoch_distances_0_1}, distances_0_0: {epoch_distances_0_0}")
 
             # update report
             if state == "train":
