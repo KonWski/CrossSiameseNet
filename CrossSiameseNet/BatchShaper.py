@@ -13,13 +13,14 @@ class BatchShaper:
 
         indices_1 = (anchor_labels == 1).nonzero()[:,0].tolist()
         indices_0 = (anchor_labels == 0).nonzero()[:,0].tolist()
-        distances = torch.cdist(anchors_transformed, anchors_transformed)
-        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean = self.log_distances(distances, indices_0, indices_1)
 
         anchors_mf = anchors_mf.to(self.device)
         anchors_transformed = model(anchors_mf)
         anchors_transformed_1 = anchors_transformed[indices_1,:]
         anchors_transformed_0 = anchors_transformed[indices_0,:]
+
+        distances = torch.cdist(anchors_transformed, anchors_transformed)
+        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean = self.log_distances(distances, indices_0, indices_1)
 
         if state == "train":
 
