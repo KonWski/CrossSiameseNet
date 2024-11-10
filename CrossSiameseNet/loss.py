@@ -20,6 +20,11 @@ class WeightedTripletMarginLoss(nn.Module):
         weights = torch.tensor([self.weights_1 for i in range(len(anchor_mf))]) * anchor_label
         weights = weights.to(self.device)
 
+        print(f"dist_anch_pos.shape: {dist_anch_pos.shape}")
+        print(f"dist_anch_neg.shape: {dist_anch_neg.shape}")
+        print(f"weights.shape: {weights.shape}")
+        print(f"self._tensor_zero.shape: {self._tensor_zero.shape}")
+
         loss = torch.max(dist_anch_pos - dist_anch_neg + self.margin, self._tensor_zero) * weights
 
         if self.reduction_type == "mean":
