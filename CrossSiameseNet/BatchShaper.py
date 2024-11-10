@@ -13,6 +13,8 @@ class BatchShaper:
 
         indices_1 = (anchor_labels == 1).nonzero()[:,0].tolist()
         indices_0 = (anchor_labels == 0).nonzero()[:,0].tolist()
+        distances = torch.cdist(anchors_transformed, anchors_transformed)
+        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean = self.log_distances(distances, indices_0, indices_1)
 
         anchors_mf = anchors_mf.to(self.device)
         anchors_transformed = model(anchors_mf)
@@ -23,8 +25,6 @@ class BatchShaper:
 
             if self.training_type == "hard_batch_learning":
 
-                distances = torch.cdist(anchors_transformed, anchors_transformed)
-                self.log_distances(distances, indices_0, indices_1)
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
 
@@ -53,8 +53,6 @@ class BatchShaper:
 
             elif self.training_type == "hard_batch_learning_only_positives":
 
-                distances = torch.cdist(anchors_transformed, anchors_transformed)
-                self.log_distances(distances, indices_0, indices_1)
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
 
@@ -84,8 +82,6 @@ class BatchShaper:
 
             elif self.training_type == "semi_hard_negative_mining":
 
-                distances = torch.cdist(anchors_transformed, anchors_transformed)
-                self.log_distances(distances, indices_0, indices_1)
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
                 n_anchors_switched_to_hard_batch_1 = 0
@@ -168,7 +164,8 @@ class BatchShaper:
                 positive_mfs_transformed = model(positive_mfs)
                 negative_mfs_transformed = model(negative_mfs)
 
-        return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels
+        return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels, \
+            distances_1_1_mean, distances_0_0_mean, distances_0_1_mean
     
 
     def log_distances(self, distances, indices_0, indices_1):
@@ -187,4 +184,4 @@ class BatchShaper:
         distances_0_1 = distances[indices_combined]
         distances_0_1_mean = round(torch.mean(distances_0_1).item(), 5)
 
-        logging.info(f"distances_1_1_mean: {distances_1_1_mean}, distances_0_0_mean: {distances_0_0_mean}, distances_0_1_mean: {distances_0_1_mean}")
+        return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean

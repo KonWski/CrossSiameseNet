@@ -8,7 +8,7 @@ import pandas as pd
 from CrossSiameseNet.checkpoints import save_checkpoint
 from CrossSiameseNet.BatchShaper import BatchShaper
 from CrossSiameseNet.loss import WeightedTripletMarginLoss
-
+import numpy as np
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
@@ -33,9 +33,12 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 train_loader.dataset.refresh_fixed_triplets(train_loader.dataset.seed_fixed_triplets + epoch)
 
         for state, loader in zip(["train", "test"], [train_loader, test_loader]):
-    
+            
             # calculated parameters
             running_loss = 0.0
+            distances_1_1_means = []
+            distances_0_0_means = []
+            distances_0_1_means = []
 
             if state == "train":
                 model.train()
@@ -48,10 +51,14 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     
                     optimizer.zero_grad()
 
-                    anchor_mf, positive_mf, negative_mf, anchor_label \
+                    anchor_mf, positive_mf, negative_mf, anchor_label, distances_1_1_mean, distances_0_0_mean, distances_0_1_mean \
                         = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
 
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
+                    
+                    distances_1_1_means.append(distances_1_1_mean)
+                    distances_0_0_means.append(distances_0_0_mean)
+                    distances_0_1_means.append(distances_0_1_mean)
 
                     if state == "train":
                         loss.backward()
@@ -61,6 +68,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
+            logging.info(f"distances_1_1_means: {np.average(distances_1_1_means)}, distances_0_1_means: {np.average(distances_0_1_means)}, distances_0_0_means: {np.average(distances_0_0_means)}")
 
             # update report
             if state == "train":
