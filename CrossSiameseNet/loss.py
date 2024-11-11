@@ -17,7 +17,8 @@ class WeightedTripletMarginLoss(nn.Module):
 
         dist_anch_pos = self.distance_metric(anchor_mf, positive_mf)
         dist_anch_neg = self.distance_metric(anchor_mf, negative_mf)
-        weights = torch.tensor([self.weights_1 for i in range(len(anchor_mf))]) * anchor_label
+        # weights = torch.tensor([self.weights_1 for i in range(len(anchor_mf))]) * anchor_label
+        weights = torch.where(anchor_label == 1, self.weights_1, 1)
         weights = weights.to(self.device)
 
         loss = torch.max(dist_anch_pos - dist_anch_neg + self.margin, self._tensor_zero[:dist_anch_neg.shape[0]]) * weights
