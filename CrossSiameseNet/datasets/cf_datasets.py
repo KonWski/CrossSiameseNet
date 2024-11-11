@@ -97,9 +97,6 @@ class MolDatasetTriplet(MolDataset):
 
 
     def __getitem__(self, id0):
-        
-        # dummy debug
-        print(f"id0: {id0}")
 
         if self.train == True:
             
@@ -169,7 +166,6 @@ class MolDatasetTriplet(MolDataset):
         n_left_observations = len(self.y)
         prop_1_to_rest = len(self.indices_1) / n_left_observations
         n_batches = int(n_left_observations / batch_size) + 1
-        print(f"n_batches: {n_batches}")
         nominal_n_1_observations = int(prop_1_to_rest * batch_size)
 
         indices_free_1 = set(self.indices_1.copy())
@@ -187,12 +183,12 @@ class MolDatasetTriplet(MolDataset):
             ids0 = random.sample(indices_free_0, n_0_observations)
             ids1 = random.sample(indices_free_1, n_1_observations)
 
+            # collect indices
+            indices_updated = indices_updated + list(ids1) + list(ids0)
+
             # remove used indices 
             indices_free_0 = indices_free_0 - set(ids0)
             indices_free_1 = indices_free_1 - set(ids1)
-
-            # collect indices
-            indices_updated = indices_updated + list(indices_free_0) + list(indices_free_1)
 
         # update data
         self.X = self.X[indices_updated, :]
