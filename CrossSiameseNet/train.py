@@ -75,12 +75,23 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
             epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
 
+            min_epoch_distances_1_1 = round(min([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            min_epoch_distances_0_1 = round(min([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            min_epoch_distances_0_0 = round(min([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+
+            max_epoch_distances_1_1 = round(max([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            max_epoch_distances_0_1 = round(max([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            max_epoch_distances_0_0 = round(max([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
             logging.info(f"distances_1_1: {epoch_distances_1_1}, distances_0_1: {epoch_distances_0_1}, distances_0_0: {epoch_distances_0_0}")
-            labels_1.sort()
-            logging.info(f"min(labels_1): {min(labels_1)}")
-            logging.info(f"labels_1: {labels_1}")
-            logging.info(f"max(labels_1): {max(labels_1)}")
+            logging.info(f"min_epoch_distances_1_1: {min_epoch_distances_1_1}, min_epoch_distances_0_1: {min_epoch_distances_0_1}, min_epoch_distances_0_0: {min_epoch_distances_0_0}")
+            logging.info(f"max_epoch_distances_1_1: {max_epoch_distances_1_1}, max_epoch_distances_0_1: {max_epoch_distances_0_1}, max_epoch_distances_0_0: {max_epoch_distances_0_0}")
+
+            # labels_1.sort()
+            # logging.info(f"min(labels_1): {min(labels_1)}")
+            # logging.info(f"labels_1: {labels_1}")
+            # logging.info(f"max(labels_1): {max(labels_1)}")
 
 
             # update report

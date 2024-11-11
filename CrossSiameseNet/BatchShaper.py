@@ -148,8 +148,7 @@ class BatchShaper:
                 negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
 
                 if n_anchors_switched_to_hard_batch_1 > 0 or n_anchors_switched_to_hard_batch_0 > 0:
-                    logging.info(f"BatchShaper | n_anchors_switched_to_hard_batch_1: {n_anchors_switched_to_hard_batch_1}")
-                    logging.info(f"BatchShaper | n_anchors_switched_to_hard_batch_0: {n_anchors_switched_to_hard_batch_0}")
+                    logging.info(f"BatchShaper | n_anchors_switched_to_hard_batch_1: {n_anchors_switched_to_hard_batch_1} | n_anchors_switched_to_hard_batch_0: {n_anchors_switched_to_hard_batch_0}")
 
             else:
                 positive_mfs = positive_mfs.to(self.device)
