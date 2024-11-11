@@ -39,6 +39,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             distances_1_1_means = []
             distances_0_0_means = []
             distances_0_1_means = []
+            labels_1 = []
 
             if state == "train":
                 model.train()
@@ -59,6 +60,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     distances_1_1_means.append(distances_1_1_mean)
                     distances_0_0_means.append(distances_0_0_mean)
                     distances_0_1_means.append(distances_0_1_mean)
+                    labels_1.append(len((anchor_label == 1).nonzero()[:,0].tolist()))
 
                     if state == "train":
                         loss.backward()
@@ -73,6 +75,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
             logging.info(f"distances_1_1: {epoch_distances_1_1}, distances_0_1: {epoch_distances_0_1}, distances_0_0: {epoch_distances_0_0}")
+            logging.info(f"min(labels_1): {min(labels_1)}")
+            logging.info(f"min(labels_1): {max(labels_1)}")
+
 
             # update report
             if state == "train":
