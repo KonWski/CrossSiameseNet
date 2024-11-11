@@ -73,9 +73,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     distances_1_1_mins.append(distances_1_1_min)
                     distances_0_0_mins.append(distances_0_0_min)
                     distances_0_1_mins.append(distances_0_1_min)
-                    distances_1_1_max.append(distances_1_1_max)
-                    distances_0_0_max.append(distances_0_0_max)
-                    distances_0_1_max.append(distances_0_1_max)
+                    distances_1_1_maxs.append(distances_1_1_max)
+                    distances_0_0_maxs.append(distances_0_0_max)
+                    distances_0_1_maxs.append(distances_0_1_max)
                     labels_1.append(len((anchor_label == 1).nonzero()[:,0].tolist()))
 
                     if state == "train":
