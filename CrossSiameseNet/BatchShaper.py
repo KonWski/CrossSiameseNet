@@ -191,7 +191,9 @@ class BatchShaper:
             distances_1_1_max = None
 
         distances_0_0 = distances[indices_0, indices_0]
+        print(distances_0_0)
         distances_0_0 = distances_0_0[distances_0_0 != 0]
+        print(distances_0_0)
 
         if len(indices_0) > 0:
             distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
