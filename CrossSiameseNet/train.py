@@ -54,8 +54,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     
                     optimizer.zero_grad()
 
-                    anchor_mf, positive_mf, negative_mf, anchor_label, distances_1_1_mean, distances_0_0_mean, distances_0_1_mean \
-                        = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
+                    anchor_mf, positive_mf, negative_mf, anchor_label, distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
+                        distances_0_0_min, distances_0_1_min, distances_1_1_max, \
+                            distances_0_0_max, distances_0_1_max = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
 
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
                     
@@ -71,9 +72,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
-            epoch_distances_1_1 = round(np.average([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+            avg_epoch_distances_1_1 = round(np.average([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            avg_epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            avg_epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
 
             min_epoch_distances_1_1 = round(min([m for m in distances_1_1_means if not np.isnan(m)]), 5)
             min_epoch_distances_0_1 = round(min([m for m in distances_0_1_means if not np.isnan(m)]), 5)
@@ -84,9 +85,11 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             max_epoch_distances_0_0 = round(max([m for m in distances_0_0_means if not np.isnan(m)]), 5)
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-            logging.info(f"distances_1_1: {epoch_distances_1_1}, distances_0_1: {epoch_distances_0_1}, distances_0_0: {epoch_distances_0_0}")
+            logging.info(f"avg_epoch_distances_1_1: {avg_epoch_distances_1_1}, avg_epoch_distances_0_1: {avg_epoch_distances_0_1}, avg_epoch_distances_0_0: {avg_epoch_distances_0_0}")
             logging.info(f"min_epoch_distances_1_1: {min_epoch_distances_1_1}, min_epoch_distances_0_1: {min_epoch_distances_0_1}, min_epoch_distances_0_0: {min_epoch_distances_0_0}")
             logging.info(f"max_epoch_distances_1_1: {max_epoch_distances_1_1}, max_epoch_distances_0_1: {max_epoch_distances_0_1}, max_epoch_distances_0_0: {max_epoch_distances_0_0}")
+            logging.info(f"distances_1_1_min: {distances_1_1_min}, distances_0_1_min: {distances_0_1_min}, distances_0_0_min: {distances_0_0_min}")
+            logging.info(f"distances_1_1_max: {distances_1_1_max}, distances_0_1_max: {distances_0_1_max}, distances_0_0_min: {distances_0_0_max}")
 
             # labels_1.sort()
             # logging.info(f"min(labels_1): {min(labels_1)}")

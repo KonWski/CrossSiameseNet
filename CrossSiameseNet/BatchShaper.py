@@ -20,7 +20,9 @@ class BatchShaper:
         anchors_transformed_0 = anchors_transformed[indices_0,:]
 
         distances = torch.cdist(anchors_transformed, anchors_transformed)
-        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean = self.log_distances(distances, indices_0, indices_1)
+        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, \
+            distances_1_1_min, distances_0_0_min, distances_0_1_min, \
+                distances_1_1_max, distances_0_0_max, distances_0_1_max = self.log_distances(distances, indices_0, indices_1)
 
         if state == "train":
 
@@ -165,7 +167,8 @@ class BatchShaper:
                 negative_mfs_transformed = model(negative_mfs)
 
         return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels, \
-            distances_1_1_mean, distances_0_0_mean, distances_0_1_mean
+            distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, distances_0_0_min, distances_0_1_min, \
+                distances_1_1_max, distances_0_0_max, distances_0_1_max
     
 
     def log_distances(self, distances, indices_0, indices_1):
@@ -177,11 +180,18 @@ class BatchShaper:
 
         distances_1_1 = distances[indices_1, indices_1]
         distances_1_1_mean = round(torch.mean(distances_1_1[distances_1_1 != 0]).item(), 5)
+        distances_1_1_min = round(torch.min(distances_1_1[distances_1_1 != 0]).item(), 5)
+        distances_1_1_max = round(torch.max(distances_1_1[distances_1_1 != 0]).item(), 5)
 
         distances_0_0 = distances[indices_0, indices_0]
         distances_0_0_mean = round(torch.mean(distances_0_0[distances_0_0 != 0]).item(), 5)
+        distances_0_0_min = round(torch.min(distances_0_0[distances_0_0 != 0]).item(), 5)
+        distances_0_0_max = round(torch.max(distances_0_0[distances_0_0 != 0]).item(), 5)
 
         distances_0_1 = distances[indices_combined]
         distances_0_1_mean = round(torch.mean(distances_0_1[distances_0_1 != 0]).item(), 5)
+        distances_0_1_min = round(torch.min(distances_0_1[distances_0_1 != 0]).item(), 5)
+        distances_0_1_max = round(torch.max(distances_0_1[distances_0_1 != 0]).item(), 5)
 
-        return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean
+        return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
+            distances_0_0_min, distances_0_1_min, distances_1_1_max, distances_0_0_max, distances_0_1_max
