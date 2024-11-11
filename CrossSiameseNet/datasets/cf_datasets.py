@@ -7,6 +7,7 @@ import torch
 import random
 import numpy as np
 import logging
+import math
 
 class MolDataset(Dataset):
 
@@ -160,6 +161,44 @@ class MolDatasetTriplet(MolDataset):
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
         self.seed_fixed_triplets = seed_fixed_triplets
         self.fixed_triplets = self.__get_fixed_dataset()
+
+
+    def shuffle_data(self, batch_size):
+        '''Set order of observations in such way that each batch has the same number of observations with label 1'''
+        
+        n_observations = len(self.y)
+        prop_1_to_rest = len(self.indices_1) / n_observations
+        n_batches = int(n_observations / batch_size) + 1
+        nominal_n_1_observations = math.ceil(prop_1_to_rest * batch_size)
+
+        indices_free_1 = set(self.indices_1.copy())
+        indices_free_0 = set(self.indices_0.copy())
+        indices_updated = []
+
+        for n_batch in range(n_batches):
+            
+            actual_batch_size = min(batch_size, n_observations - ((n_batch + 1) * batch_size))
+            n_1_observations = min(nominal_n_1_observations, len(indices_free_1))
+            n_0_observations = actual_batch_size - n_1_observations
+
+            # select random indices for updated dataset
+            ids0 = random.sample(indices_free_0, n_0_observations)
+            ids1 = random.sample(indices_free_1, n_1_observations)
+
+            # remove used indices 
+            indices_free_0 = indices_free_0 - set(ids0)
+            indices_free_1 = indices_free_1 - set(ids1)
+
+            # collect indices
+            indices_updated = indices_updated + list(indices_free_0) + list(indices_free_1)
+
+        # update data
+        self.X = self.X[indices_updated, :]
+        self.y = self.y[indices_updated, :]
+        self.smiles = [self.smiles[i] for i in indices_updated]
+
+        self.indices_0 = (self.y == 0).nonzero()[:,0].tolist()
+        self.indices_1 = (self.y == 1).nonzero()[:,0].tolist()
 
 
 def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
