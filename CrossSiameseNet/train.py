@@ -39,6 +39,13 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             distances_1_1_means = []
             distances_0_0_means = []
             distances_0_1_means = []
+            distances_1_1_maxs = []
+            distances_0_0_maxs = []
+            distances_0_1_maxs = []
+            distances_1_1_mins = []
+            distances_0_0_mins = []
+            distances_0_1_mins = []
+
             labels_1 = []
 
             if state == "train":
@@ -63,6 +70,12 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     distances_1_1_means.append(distances_1_1_mean)
                     distances_0_0_means.append(distances_0_0_mean)
                     distances_0_1_means.append(distances_0_1_mean)
+                    distances_1_1_mins.append(distances_1_1_min)
+                    distances_0_0_mins.append(distances_0_0_min)
+                    distances_0_1_mins.append(distances_0_1_min)
+                    distances_1_1_max.append(distances_1_1_max)
+                    distances_0_0_max.append(distances_0_0_max)
+                    distances_0_1_max.append(distances_0_1_max)
                     labels_1.append(len((anchor_label == 1).nonzero()[:,0].tolist()))
 
                     if state == "train":
@@ -72,22 +85,30 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
-            avg_epoch_distances_1_1 = round(np.average([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            avg_epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            avg_epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+            avg_means_epoch_distances_1_1 = round(np.average([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            avg_means_epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            avg_means_epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
 
-            min_epoch_distances_1_1 = round(min([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            min_epoch_distances_0_1 = round(min([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            min_epoch_distances_0_0 = round(min([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+            min_means_epoch_distances_1_1 = round(min([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            min_means_epoch_distances_0_1 = round(min([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            min_means_epoch_distances_0_0 = round(min([m for m in distances_0_0_means if not np.isnan(m)]), 5)
 
-            max_epoch_distances_1_1 = round(max([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            max_epoch_distances_0_1 = round(max([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            max_epoch_distances_0_0 = round(max([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+            max_means_epoch_distances_1_1 = round(max([m for m in distances_1_1_means if not np.isnan(m)]), 5)
+            max_means_epoch_distances_0_1 = round(max([m for m in distances_0_1_means if not np.isnan(m)]), 5)
+            max_means_epoch_distances_0_0 = round(max([m for m in distances_0_0_means if not np.isnan(m)]), 5)
+
+            distances_1_1_min = round(min([m for m in distances_1_1_mins if not np.isnan(m)]), 5)
+            distances_0_1_min = round(min([m for m in distances_0_1_mins if not np.isnan(m)]), 5)
+            distances_0_0_min = round(min([m for m in distances_0_0_mins if not np.isnan(m)]), 5)
+
+            distances_1_1_max = round(max([m for m in distances_1_1_maxs if not np.isnan(m)]), 5)
+            distances_0_1_max = round(max([m for m in distances_0_1_maxs if not np.isnan(m)]), 5)
+            distances_0_0_max = round(max([m for m in distances_0_0_maxs if not np.isnan(m)]), 5)  
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-            logging.info(f"avg_epoch_distances_1_1: {avg_epoch_distances_1_1}, avg_epoch_distances_0_1: {avg_epoch_distances_0_1}, avg_epoch_distances_0_0: {avg_epoch_distances_0_0}")
-            logging.info(f"min_epoch_distances_1_1: {min_epoch_distances_1_1}, min_epoch_distances_0_1: {min_epoch_distances_0_1}, min_epoch_distances_0_0: {min_epoch_distances_0_0}")
-            logging.info(f"max_epoch_distances_1_1: {max_epoch_distances_1_1}, max_epoch_distances_0_1: {max_epoch_distances_0_1}, max_epoch_distances_0_0: {max_epoch_distances_0_0}")
+            logging.info(f"avg_means_epoch_distances_1_1: {avg_means_epoch_distances_1_1}, avg_means_epoch_distances_0_1: {avg_means_epoch_distances_0_1}, avg_means_epoch_distances_0_0: {avg_means_epoch_distances_0_0}")
+            logging.info(f"min_means_epoch_distances_1_1: {min_means_epoch_distances_1_1}, min_means_epoch_distances_0_1: {min_means_epoch_distances_0_1}, min_means_epoch_distances_0_0: {min_means_epoch_distances_0_0}")
+            logging.info(f"max_means_epoch_distances_1_1: {max_means_epoch_distances_1_1}, max_means_epoch_distances_0_1: {max_means_epoch_distances_0_1}, max_means_epoch_distances_0_0: {max_means_epoch_distances_0_0}")
             logging.info(f"distances_1_1_min: {distances_1_1_min}, distances_0_1_min: {distances_0_1_min}, distances_0_0_min: {distances_0_0_min}")
             logging.info(f"distances_1_1_max: {distances_1_1_max}, distances_0_1_max: {distances_0_1_max}, distances_0_0_min: {distances_0_0_max}")
 
