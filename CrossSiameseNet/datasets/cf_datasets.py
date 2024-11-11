@@ -178,14 +178,9 @@ class MolDatasetTriplet(MolDataset):
 
         for n_batch in range(n_batches):
             
-            print(f"n_batch: {n_batch}")
             actual_batch_size = min(batch_size, n_left_observations)
-            print(f"n_left_observations: {n_left_observations}")
-            print(f"actual_batch_size: {actual_batch_size}")
             n_1_observations = min(nominal_n_1_observations, len(indices_free_1))
-            print(f"n_1_observations: {n_1_observations}")
             n_0_observations = actual_batch_size - n_1_observations
-            print(f"n_0_observations: {n_0_observations}")
             n_left_observations = n_left_observations - actual_batch_size
 
             # select random indices for updated dataset
