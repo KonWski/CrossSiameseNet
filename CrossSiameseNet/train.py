@@ -75,7 +75,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
             logging.info(f"distances_1_1: {epoch_distances_1_1}, distances_0_1: {epoch_distances_0_1}, distances_0_0: {epoch_distances_0_0}")
-            labels_1 = labels_1.sort()
+            labels_1.sort()
             logging.info(f"min(labels_1): {min(labels_1)}")
             logging.info(f"labels_1: {labels_1}")
             logging.info(f"max(labels_1): {max(labels_1)}")
