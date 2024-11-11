@@ -1,6 +1,7 @@
 import torch
 import random
 import logging
+import numpy as np
 
 class BatchShaper:
 
@@ -186,9 +187,9 @@ class BatchShaper:
             distances_1_1_min = round(torch.min(distances_1_1).item(), 5)
             distances_1_1_max = round(torch.max(distances_1_1).item(), 5)
         except:
-            distances_1_1_mean = None
-            distances_1_1_min = None
-            distances_1_1_max = None
+            distances_1_1_mean = np.nan
+            distances_1_1_min = np.nan
+            distances_1_1_max = np.nan
 
         distances_0_0 = distances[indices_0, indices_0]
         distances_0_0 = distances_0_0[distances_0_0 != 0]
@@ -198,9 +199,9 @@ class BatchShaper:
             distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
             distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
         except:
-            distances_0_0_mean = None
-            distances_0_0_min = None
-            distances_0_0_max = None
+            distances_0_0_mean = np.nan
+            distances_0_0_min = np.nan
+            distances_0_0_max = np.nan
 
         distances_0_1 = distances[indices_combined]
         distances_0_1 = distances_0_1[distances_0_1 != 0]
@@ -209,9 +210,9 @@ class BatchShaper:
             distances_0_1_min = round(torch.min(distances_0_1).item(), 5)
             distances_0_1_max = round(torch.max(distances_0_1).item(), 5)
         except:
-            distances_0_1_mean = None
-            distances_0_1_min = None
-            distances_0_1_max = None
+            distances_0_1_mean = np.nan
+            distances_0_1_min = np.nan
+            distances_0_1_max = np.nan
 
         return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
             distances_0_0_min, distances_0_1_min, distances_1_1_max, distances_0_0_max, distances_0_1_max
