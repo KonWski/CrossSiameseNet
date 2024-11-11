@@ -192,9 +192,15 @@ class BatchShaper:
 
         distances_0_0 = distances[indices_0, indices_0]
         distances_0_0 = distances_0_0[distances_0_0 != 0]
-        distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
-        distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
-        distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
+
+        if len(indices_0) > 0:
+            distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
+            distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
+            distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
+        else:
+            distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
+            distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
+            distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
 
         distances_0_1 = distances[indices_combined]
         distances_0_1 = distances_0_1[distances_0_1 != 0]
