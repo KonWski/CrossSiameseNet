@@ -96,6 +96,9 @@ class MolDatasetTriplet(MolDataset):
 
 
     def __getitem__(self, id0):
+        
+        # dummy debug
+        print(f"id0: {id0}")
 
         if self.train == True:
             
