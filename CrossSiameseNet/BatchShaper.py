@@ -179,19 +179,22 @@ class BatchShaper:
                 indices_combined.append([i0, i1])
 
         distances_1_1 = distances[indices_1, indices_1]
-        distances_1_1_mean = round(torch.mean(distances_1_1[distances_1_1 != 0]).item(), 5)
-        distances_1_1_min = round(torch.min(distances_1_1[distances_1_1 != 0]).item(), 5)
-        distances_1_1_max = round(torch.max(distances_1_1[distances_1_1 != 0]).item(), 5)
+        distances_1_1 = distances_1_1[distances_1_1 != 0]
+        distances_1_1_mean = round(torch.mean(distances_1_1).item(), 5)
+        distances_1_1_min = round(torch.min(distances_1_1).item(), 5)
+        distances_1_1_max = round(torch.max(distances_1_1).item(), 5)
 
         distances_0_0 = distances[indices_0, indices_0]
-        distances_0_0_mean = round(torch.mean(distances_0_0[distances_0_0 != 0]).item(), 5)
-        distances_0_0_min = round(torch.min(distances_0_0[distances_0_0 != 0]).item(), 5)
-        distances_0_0_max = round(torch.max(distances_0_0[distances_0_0 != 0]).item(), 5)
+        distances_0_0 = distances_0_0[distances_0_0 != 0]
+        distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
+        distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
+        distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
 
         distances_0_1 = distances[indices_combined]
-        distances_0_1_mean = round(torch.mean(distances_0_1[distances_0_1 != 0]).item(), 5)
-        distances_0_1_min = round(torch.min(distances_0_1[distances_0_1 != 0]).item(), 5)
-        distances_0_1_max = round(torch.max(distances_0_1[distances_0_1 != 0]).item(), 5)
+        distances_0_1 = distances_0_1[distances_0_1 != 0]
+        distances_0_1_mean = round(torch.mean(distances_0_1).item(), 5)
+        distances_0_1_min = round(torch.min(distances_0_1).item(), 5)
+        distances_0_1_max = round(torch.max(distances_0_1).item(), 5)
 
         return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
             distances_0_0_min, distances_0_1_min, distances_1_1_max, distances_0_0_max, distances_0_1_max
