@@ -197,7 +197,9 @@ class MolDatasetTriplet(MolDataset):
 
             # remove used indices 
             indices_free_0 = indices_free_0 - set(ids0)
+            print(f"indices_free_0: {len(indices_free_0)}")
             indices_free_1 = indices_free_1 - set(ids1)
+            print(f"indices_free_1: {len(indices_free_1)}")
 
         # update data
         self.X = self.X[indices_updated, :]
