@@ -182,6 +182,7 @@ class BatchShaper:
             for i1 in indices_1:
                 indices_combined.append([i0, i1])
         print(f"indices_combined: {indices_combined}")
+        print(f"distances.shape: {distances.shape}")
         distances_1_1 = distances[indices_1, indices_1]
         distances_1_1 = distances_1_1[distances_1_1 != 0]
         
