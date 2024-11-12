@@ -150,8 +150,9 @@ class BatchShaper:
                 positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
                 negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
 
-                if n_anchors_switched_to_hard_batch_1 > 0 or n_anchors_switched_to_hard_batch_0 > 0:
-                    logging.info(f"BatchShaper | n_anchors_switched_to_hard_batch_1: {n_anchors_switched_to_hard_batch_1} | n_anchors_switched_to_hard_batch_0: {n_anchors_switched_to_hard_batch_0}")
+                n_anchors_semi_hard = len(anchors_transformed) - n_anchors_switched_to_hard_batch_1 - n_anchors_switched_to_hard_batch_0
+                if n_anchors_semi_hard > 0:
+                    logging.info(f"BatchShaper | n_anchors_semi_hard: {n_anchors_semi_hard}")
 
             else:
                 positive_mfs = positive_mfs.to(self.device)
