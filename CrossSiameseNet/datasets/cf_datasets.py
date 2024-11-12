@@ -169,7 +169,7 @@ class MolDatasetTriplet(MolDataset):
         print(f"prop_1_to_rest: {prop_1_to_rest}")
         n_batches = int(n_left_observations / batch_size) + 1
         print(f"n_batches: {n_batches}")
-        nominal_n_1_observations = int(prop_1_to_rest * batch_size)
+        nominal_n_1_observations = math.ceil(prop_1_to_rest * batch_size)
         print(f"nominal_n_1_observations: {nominal_n_1_observations}")
 
         indices_free_1 = set(self.indices_1.copy())
