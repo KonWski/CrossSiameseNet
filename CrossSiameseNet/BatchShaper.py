@@ -177,12 +177,12 @@ class BatchShaper:
 
     def log_distances(self, distances, indices_0, indices_1):
         
-        indices_combined = []
-        for i0 in indices_0:
-            for i1 in indices_1:
-                indices_combined.append([i0, i1])
-        print(f"indices_combined: {indices_combined}")
-        print(f"distances.shape: {distances.shape}")
+        # indices_combined = []
+        # for i0 in indices_0:
+        #     for i1 in indices_1:
+        #         indices_combined.append([i0, i1])
+        # print(f"indices_combined: {indices_combined}")
+        # print(f"distances.shape: {distances.shape}")
         distances_1_1 = distances[indices_1, indices_1]
         distances_1_1 = distances_1_1[distances_1_1 != 0]
         
@@ -207,16 +207,20 @@ class BatchShaper:
             distances_0_0_min = np.nan
             distances_0_0_max = np.nan
 
-        distances_0_1 = distances[indices_combined]
-        distances_0_1 = distances_0_1[distances_0_1 != 0]
-        try:
-            distances_0_1_mean = round(torch.mean(distances_0_1).item(), 5)
-            distances_0_1_min = round(torch.min(distances_0_1).item(), 5)
-            distances_0_1_max = round(torch.max(distances_0_1).item(), 5)
-        except:
-            distances_0_1_mean = np.nan
-            distances_0_1_min = np.nan
-            distances_0_1_max = np.nan
+        distances_0_1 = distances[indices_0, indices_1]
+        distances_0_1_mean = round(sum(distances_0_1) / len(distances_0_1), 5)
+        distances_0_1_min = round(min(distances_0_1), 5)
+        distances_0_1_max = round(max(distances_0_1), 5)
+
+        # distances_0_1 = distances_0_1[distances_0_1 != 0]
+        # try:
+        #     distances_0_1_mean = round(torch.mean(distances_0_1).item(), 5)
+        #     distances_0_1_min = round(torch.min(distances_0_1).item(), 5)
+        #     distances_0_1_max = round(torch.max(distances_0_1).item(), 5)
+        # except:
+        #     distances_0_1_mean = np.nan
+        #     distances_0_1_min = np.nan
+        #     distances_0_1_max = np.nan
 
         return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
             distances_0_0_min, distances_0_1_min, distances_1_1_max, distances_0_0_max, distances_0_1_max
