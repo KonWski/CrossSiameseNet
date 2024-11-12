@@ -169,7 +169,7 @@ class MolDatasetTriplet(MolDataset):
         n_batches = int(n_left_observations / batch_size) + 1
         # print(f"n_batches: {n_batches}")
         # nominal_n_1_observations = int(prop_1_to_rest * batch_size)
-        nominal_n_1_observations = [len(el) for el in np.array_split(np.array(range(n_left_observations)), n_batches)]
+        nominal_n_1_observations = [len(el) for el in np.array_split(np.array(range(len(self.indices_1))), n_batches)]
 
         # print(f"nominal_n_1_observations: {nominal_n_1_observations}")
 
