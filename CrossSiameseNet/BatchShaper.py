@@ -14,6 +14,8 @@ class BatchShaper:
 
         indices_1 = (anchor_labels == 1).nonzero()[:,0].tolist()
         indices_0 = (anchor_labels == 0).nonzero()[:,0].tolist()
+        print(f"indices_1: {indices_1}")
+        print(f"indices_0: {indices_0}")
 
         anchors_mf = anchors_mf.to(self.device)
         anchors_transformed = model(anchors_mf)
@@ -179,7 +181,7 @@ class BatchShaper:
         for i0 in indices_0:
             for i1 in indices_1:
                 indices_combined.append([i0, i1])
-
+        print(f"indices_combined: {indices_combined}")
         distances_1_1 = distances[indices_1, indices_1]
         distances_1_1 = distances_1_1[distances_1_1 != 0]
         
