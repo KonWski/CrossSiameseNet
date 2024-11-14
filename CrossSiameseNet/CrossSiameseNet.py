@@ -34,23 +34,13 @@ class LinearBlock(nn.Module):
         self.linear = nn.Linear(dim_in, dim_out)
         self.activation_function = nn.ReLU(inplace=True)
         self.batch_norm = nn.BatchNorm1d(dim_out)
-        self.dropout = nn.Dropout(p=0.2, inplace=True)
 
     def forward(self, x):
         
         x = self.flatten(x)
-        print(f"linear0 x.shape {x.shape}")
         x = self.linear(x)
-        print(f"linear1 x.shape {x.shape}")
-
         x = self.activation_function(x)
-        print(f"linear2 x.shape {x.shape}")
-
         x = self.batch_norm(x)
-        print(f"linear3 x.shape {x.shape}")
-
-        x = self.dropout(x)
-        print(f"linear4 x.shape {x.shape}")
 
         return x
     
@@ -73,7 +63,7 @@ class CrossSiameseNet(nn.Module):
         self.conv_block5 = ConvBlock(64, 64)
         self.conv_block6 = ConvBlock(64, 2)
 
-        self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
+        self.linear_block = LinearBlock(4*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -93,32 +83,19 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
-        print(f"features_submodels[0].shape: {features_submodels[0].shape}")
         features_submodels = torch.stack(features_submodels, dim=-2)
-        print(f"features_submodels.shape: {features_submodels.shape}")
 
         x = self.conv_block1(features_submodels)
-        print(f"x0.shape: {x.shape}")
-
         residual_features0 = x
+
         x = self.conv_block2(x)
-        print(f"x1.shape: {x.shape}")
-
         x = self.conv_block3(x, residual_features0)
-        print(f"x2.shape: {x.shape}")
-
         residual_features1 = x
+        
         x = self.conv_block4(x)
-        print(f"x3.shape: {x.shape}")
-
         x = self.conv_block5(x, residual_features1)
-        print(f"x4.shape: {x.shape}")
-
         x = self.conv_block6(x)
-        print(f"x5.shape: {x.shape}")
-
         x = self.linear_block(x)
-        print(f"x6.shape: {x.shape}")
 
         return x
 
