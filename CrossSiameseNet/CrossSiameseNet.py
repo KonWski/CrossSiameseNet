@@ -65,7 +65,6 @@ class CrossSiameseNet(nn.Module):
         self.conv_block6 = ConvBlock(64, 2)
 
         self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
-        self.classifier = nn.Linear(2*self.cf_size, 2)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -99,8 +98,4 @@ class CrossSiameseNet(nn.Module):
         return x
 
     def forward(self, x):
-
-        features = self.forward_once(x)
-        x = self.classifier(features)
-
-        return x
+        return self.forward_once(x)
