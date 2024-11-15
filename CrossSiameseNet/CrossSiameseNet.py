@@ -70,7 +70,8 @@ class CrossSiameseNet(nn.Module):
                 param.requires_grad = False
 
         # initialize the weights
-        for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, self.conv_block4, self.conv_block5]:
+        for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
+                           self.conv_block4, self.conv_block5, self.conv_block6]:
             torch.nn.init.xavier_uniform_(conv_block.conv.weight)
             conv_block.conv.bias.data.fill_(0.01)
 
