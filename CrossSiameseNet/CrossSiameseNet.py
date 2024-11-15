@@ -54,20 +54,20 @@ class CrossSiameseNet(nn.Module):
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
 
-        self.conv_block1 = ConvBlock(self.n_models, 32)
-        self.conv_block2 = ConvBlock(32, 32)
-        self.conv_block3 = ConvBlock(32, 32)
-        self.conv_block4 = ConvBlock(32, 32)
-        self.conv_block5 = ConvBlock(32, 32)
-        self.conv_block6 = ConvBlock(32, 2)
+        self.conv_block1 = ConvBlock(self.n_models, 64)
+        self.conv_block2 = ConvBlock(64, 64)
+        self.conv_block3 = ConvBlock(64, 64)
+        self.conv_block4 = ConvBlock(64, 64)
+        self.conv_block5 = ConvBlock(64, 64)
+        self.conv_block6 = ConvBlock(64, 2)
 
         self.linear_block = LinearBlock(4*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
-        for model in self.models:
-            model.eval()
-            for param in model.parameters():
-                param.requires_grad = False
+        # for model in self.models:
+        #     model.eval()
+        #     for param in model.parameters():
+        #         param.requires_grad = False
 
         # initialize the weights
         for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
