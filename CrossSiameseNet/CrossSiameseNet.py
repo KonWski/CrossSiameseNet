@@ -168,7 +168,7 @@ class CrossSiameseNet(nn.Module):
 
         x = self.conv_block1(features_submodels)
         x = self.flatten(x)
-        residual_features = x.copy()
+        residual_features = x.clone()
 
         x = self.linear_block1(x)
         x = self.linear_block2(x, residual_features)
