@@ -9,7 +9,7 @@ class ConvBlock(nn.Module):
 
         super().__init__()
         self.conv = nn.Conv1d(dim_in, dim_out, 1)
-        self.activation_function = nn.ReLU(inplace=True)
+        self.activation_function = nn.ReLU()
         self.batch_norm = nn.BatchNorm1d(dim_out)
 
     def forward(self, x, residual = None):
@@ -30,7 +30,7 @@ class LinearBlock(nn.Module):
         super().__init__()
         self.flatten = nn.Flatten(start_dim=1)
         self.linear = nn.Linear(dim_in, dim_out)
-        self.activation_function = nn.ReLU(inplace=True)
+        self.activation_function = nn.ReLU()
         self.batch_norm = nn.BatchNorm1d(dim_out)
 
     def forward(self, x):
