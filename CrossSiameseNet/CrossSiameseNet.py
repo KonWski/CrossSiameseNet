@@ -168,8 +168,9 @@ class CrossSiameseNet(nn.Module):
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
 
-        self.linear_block1 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block2 = LinearBlock(4*self.cf_size, 2*self.cf_size)
+        self.linear_block_hiv = LinearBlock(2*self.cf_size, 2*self.cf_size)
+        self.linear_block_auxiliary_model = LinearBlock(2*self.cf_size, 2*self.cf_size)
+        self.linear_block = LinearBlock(4*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -177,20 +178,20 @@ class CrossSiameseNet(nn.Module):
             for param in model.parameters():
                 param.requires_grad = False
 
-        for lin_block in [self.linear_block1, self.linear_block2]:
+        for lin_block in [self.linear_block_hiv, self.linear_block_auxiliary_model, self.linear_block]:
             torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
             lin_block.linear1.bias.data.fill_(0.01)
             torch.nn.init.xavier_uniform_(lin_block.linear2.weight)
             lin_block.linear2.bias.data.fill_(0.01)
 
-
     def forward_once(self, x):
 
-        # features collected across all models
-        features_submodels = torch.concat([model.forward_once(x) for model in self.models], dim=1)
+        features_hiv = self.models[0].forward_once(x)
+        features_auxiliary_model = self.models[1].forward_once(x)
 
-        x = self.linear_block1(features_submodels, True)
-        x = self.linear_block2(x)
+        # features collected across all models
+        features = torch.concat([features_hiv, features_auxiliary_model], dim=1)
+        x = self.linear_block(features)
 
         return x
 
