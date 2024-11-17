@@ -168,8 +168,7 @@ class CrossSiameseNet(nn.Module):
 
         self.linear_block1 = LinearBlock(4*self.cf_size, 4*self.cf_size)
         self.linear_block2 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block3 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block4 = LinearBlock(4*self.cf_size, 2*self.cf_size)
+        self.linear_block3 = LinearBlock(4*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -177,7 +176,7 @@ class CrossSiameseNet(nn.Module):
             for param in model.parameters():
                 param.requires_grad = False
 
-        for lin_block in [self.linear_block1, self.linear_block2, self.linear_block3, self.linear_block4]:
+        for lin_block in [self.linear_block1, self.linear_block2, self.linear_block3]:
             torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
             lin_block.linear1.bias.data.fill_(0.01)
             torch.nn.init.xavier_uniform_(lin_block.linear2.weight)
@@ -191,8 +190,7 @@ class CrossSiameseNet(nn.Module):
 
         x = self.linear_block1(features_submodels, True)
         x = self.linear_block2(x, True)
-        x = self.linear_block3(x, True)
-        x = self.linear_block4(x)
+        x = self.linear_block3(x)
 
         return x
 
