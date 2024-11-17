@@ -108,20 +108,51 @@ class LinearBlock(nn.Module):
     def __init__(self, dim_in: int, dim_out: int):
 
         super().__init__()
-        self.linear = nn.Linear(dim_in, dim_out)
+        self.linear1 = nn.Linear(dim_in, dim_in)
+        self.batch_norm1 = nn.BatchNorm1d(dim_in)
+
+        self.linear2 = nn.Linear(dim_in, dim_out)
+        self.batch_norm2 = nn.BatchNorm1d(dim_out)
+
         self.activation_function = nn.ReLU()
-        self.batch_norm = nn.BatchNorm1d(dim_out)
-
-    def forward(self, x, residual = None):
         
-        x = self.linear(x)
-        x = self.activation_function(x)
-        x = self.batch_norm(x)
 
-        if residual is not None:
-            x += residual
+    def forward(self, x, residual = False):
+        
+        residual_features = x.clone()
+        x = self.linear1(x)
+        x = self.batch_norm1(x)
+        x = self.activation_function(x)
+
+        x = self.linear2(x)
+        x = self.batch_norm2(x)
+        if residual:
+            x += residual_features
+        x = self.activation_function(x)
 
         return x
+
+
+# # alternative version
+# class LinearBlock(nn.Module):
+
+#     def __init__(self, dim_in: int, dim_out: int):
+
+#         super().__init__()
+#         self.linear = nn.Linear(dim_in, dim_out)
+#         self.activation_function = nn.ReLU()
+#         self.batch_norm = nn.BatchNorm1d(dim_out)
+
+#     def forward(self, x, residual = None):
+        
+#         x = self.linear(x)
+#         x = self.activation_function(x)
+#         x = self.batch_norm(x)
+
+#         if residual is not None:
+#             x += residual
+
+#         return x
     
 
 class CrossSiameseNet(nn.Module):
@@ -154,10 +185,10 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = torch.concat([model.forward_once(x) for model in self.models], dim=1)
-        x = self.linear_block1(features_submodels)
-        residual_features = x.clone()
-        x = self.linear_block2(x)
-        x = self.linear_block3(x, residual_features)
+
+        x = self.linear_block1(features_submodels, True)
+        x = self.linear_block2(x, True)
+        x = self.linear_block3(x, True)
         x = self.linear_block4(x)
 
         return x
