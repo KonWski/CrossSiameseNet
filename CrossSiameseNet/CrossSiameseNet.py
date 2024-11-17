@@ -116,10 +116,10 @@ class LinearBlock(nn.Module):
         
         x = self.linear(x)
         x = self.activation_function(x)
+        x = self.batch_norm(x)
+
         if residual is not None:
             x += residual
-
-        x = self.batch_norm(x)
 
         return x
     
