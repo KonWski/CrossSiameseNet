@@ -3,24 +3,24 @@ import torch.nn as nn
 from typing import List
 
 
-class ConvBlock(nn.Module):
+# class ConvBlock(nn.Module):
 
-    def __init__(self, dim_in: int, dim_out: int):
+#     def __init__(self, dim_in: int, dim_out: int):
 
-        super().__init__()
-        self.conv = nn.Conv1d(dim_in, dim_out, 1)
-        self.activation_function = nn.ReLU()
-        self.batch_norm = nn.BatchNorm1d(dim_out)
+#         super().__init__()
+#         self.conv = nn.Conv1d(dim_in, dim_out, 1)
+#         self.activation_function = nn.ReLU()
+#         self.batch_norm = nn.BatchNorm1d(dim_out)
 
-    def forward(self, x, residual = None):
+#     def forward(self, x, residual = None):
 
-        if residual is not None:
-            x += residual
+#         if residual is not None:
+#             x += residual
 
-        x = self.conv(x)
-        x = self.activation_function(x)
-        x = self.batch_norm(x)
-        return x
+#         x = self.conv(x)
+#         x = self.activation_function(x)
+#         x = self.batch_norm(x)
+#         return x
 
 
 # class LinearBlock(nn.Module):
@@ -135,6 +135,19 @@ class LinearBlock(nn.Module):
         return x
 
 
+class ConvBlock(nn.Module):
+
+    def __init__(self, dim_in: int, dim_out: int):
+
+        super().__init__()
+        self.conv = nn.Conv1d(dim_in, dim_out, 1)
+
+    def forward(self, x):
+
+        x = self.conv(x)
+        return x
+
+
 # # alternative version
 # class LinearBlock(nn.Module):
 
@@ -171,7 +184,6 @@ class CrossSiameseNet(nn.Module):
         self.conv_block = ConvBlock(2, 1)
         self.flatten = nn.Flatten(start_dim=1)
         self.linear_block1 = LinearBlock(2*self.cf_size, 2*self.cf_size)
-        self.linear_block2 = LinearBlock(2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -179,11 +191,15 @@ class CrossSiameseNet(nn.Module):
             for param in model.parameters():
                 param.requires_grad = False
 
-        for lin_block in [self.linear_block1, self.linear_block2]:
+        for lin_block in [self.linear_block1]:
             torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
             lin_block.linear1.bias.data.fill_(0.01)
             torch.nn.init.xavier_uniform_(lin_block.linear2.weight)
             lin_block.linear2.bias.data.fill_(0.01)
+
+        for conv_block in [self.conv_block]:
+            torch.nn.init.xavier_uniform_(conv_block.conv.weight)
+            conv_block.conv.bias.data.fill_(0.01)
 
     def forward_once(self, x):
 
@@ -191,8 +207,7 @@ class CrossSiameseNet(nn.Module):
         features_submodels = torch.stack(features_submodels, dim=-2)
         x = self.conv_block(features_submodels)
         x = self.flatten(x)
-        x = self.linear_block1(x, True)
-        x = self.linear_block2(x)
+        x = self.linear_block1(x)
 
         return x
 
