@@ -119,16 +119,18 @@ class LinearBlock(nn.Module):
 
     def forward(self, x, residual = False):
         
-        residual_features = x.clone()
+        if residual:
+            residual_features = x.clone()
         x = self.linear1(x)
-        x = self.batch_norm1(x)
         x = self.activation_function(x)
+        x = self.batch_norm1(x)
+
 
         x = self.linear2(x)
-        x = self.batch_norm2(x)
         if residual:
             x += residual_features
         x = self.activation_function(x)
+        x = self.batch_norm2(x)
 
         return x
 
