@@ -109,7 +109,7 @@ class LinearBlock(nn.Module):
 
         super().__init__()
         self.linear = nn.Linear(dim_in, dim_out)
-        self.activation_function = nn.ReLU(inplace=True)
+        self.activation_function = nn.ReLU()
         self.batch_norm = nn.BatchNorm1d(dim_out)
 
     def forward(self, x, residual = None):
@@ -136,8 +136,8 @@ class CrossSiameseNet(nn.Module):
         self.cf_size = models[0].cf_size
 
         self.linear_block1 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block2 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block3 = LinearBlock(4*self.cf_size, 4*self.cf_size)
+        self.linear_block2 = LinearBlock(4*self.cf_size, 2*self.cf_size)
+        self.linear_block3 = LinearBlock(2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
