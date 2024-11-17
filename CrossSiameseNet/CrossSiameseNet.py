@@ -113,12 +113,12 @@ class LinearBlock(nn.Module):
         self.batch_norm = nn.BatchNorm1d(dim_out)
 
     def forward(self, x, residual = None):
-
-        if residual is not None:
-            x += residual
         
         x = self.linear(x)
         x = self.activation_function(x)
+        if residual is not None:
+            x += residual
+
         x = self.batch_norm(x)
 
         return x
@@ -136,8 +136,10 @@ class CrossSiameseNet(nn.Module):
         self.cf_size = models[0].cf_size
 
         self.linear_block1 = LinearBlock(4*self.cf_size, 4*self.cf_size)
-        self.linear_block2 = LinearBlock(4*self.cf_size, 2*self.cf_size)
-        self.linear_block3 = LinearBlock(2*self.cf_size, 2*self.cf_size)
+        self.linear_block2 = LinearBlock(4*self.cf_size, 4*self.cf_size)
+        self.linear_block3 = LinearBlock(4*self.cf_size, 4*self.cf_size)
+        self.linear_block4 = LinearBlock(4*self.cf_size, 4*self.cf_size)
+        self.linear_block5 = LinearBlock(2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -153,10 +155,11 @@ class CrossSiameseNet(nn.Module):
 
         # features collected across all models
         features_submodels = torch.concat([model.forward_once(x) for model in self.models], dim=1)
-        residual_features = features_submodels.clone()
         x = self.linear_block1(features_submodels)
-        x = self.linear_block2(x, residual_features)
-        x = self.linear_block3(x)
+        residual_features = x.clone()
+        x = self.linear_block2(x)
+        x = self.linear_block3(x, residual_features)
+        x = self.linear_block4(x)
 
         return x
 
