@@ -11,6 +11,7 @@ class ConvBlock(nn.Module):
         self.conv = nn.Conv1d(dim_in, dim_out, 1)
         self.activation_function = nn.ReLU()
         self.batch_norm = nn.BatchNorm1d(dim_out)
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x, residual = None):
 
@@ -20,6 +21,7 @@ class ConvBlock(nn.Module):
         x = self.conv(x)
         x = self.activation_function(x)
         x = self.batch_norm(x)
+        x = self.dropout(x)
         return x
 
 
