@@ -183,15 +183,19 @@ class CrossSiameseNet(nn.Module):
             for param in model.parameters():
                 param.requires_grad = False
 
-        for lin_block in [self.linear_block1]:
-            torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
-            lin_block.linear1.bias.data.fill_(0.01)
-            torch.nn.init.xavier_uniform_(lin_block.linear2.weight)
-            lin_block.linear2.bias.data.fill_(0.01)
+        # for lin_block in [self.linear_block1]:
+        #     torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
+        #     lin_block.linear1.bias.data.fill_(0.01)
+        #     torch.nn.init.xavier_uniform_(lin_block.linear2.weight)
+        #     lin_block.linear2.bias.data.fill_(0.01)
 
-        for conv_block in [self.conv_block]:
-            torch.nn.init.xavier_uniform_(conv_block.conv.weight)
-            conv_block.conv.bias.data.fill_(0.01)
+        for lin_block in [self.linear_block1]:
+            torch.nn.init.xavier_uniform_(lin_block.linear.weight)
+            lin_block.linear.bias.data.fill_(0.01)
+
+        # for conv_block in [self.conv_block]:
+        #     torch.nn.init.xavier_uniform_(conv_block.conv.weight)
+        #     conv_block.conv.bias.data.fill_(0.01)
 
     def forward_once(self, x):
 
