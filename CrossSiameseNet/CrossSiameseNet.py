@@ -57,11 +57,9 @@ class CrossSiameseNet(nn.Module):
         self.conv_block1 = ConvBlock(self.n_models, 32)
         self.conv_block2 = ConvBlock(32, 32)
         self.conv_block3 = ConvBlock(32, 32)
-        self.conv_block4 = ConvBlock(32, 32)
-        self.conv_block5 = ConvBlock(32, 32)
-        self.conv_block6 = ConvBlock(32, 2)
+        self.conv_block4 = ConvBlock(32, 1)
 
-        self.linear_block = LinearBlock(4*self.cf_size, 2*self.cf_size)
+        self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -71,7 +69,7 @@ class CrossSiameseNet(nn.Module):
 
         # initialize the weights
         for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
-                           self.conv_block4, self.conv_block5, self.conv_block6]:
+                           self.conv_block4]:
             torch.nn.init.xavier_uniform_(conv_block.conv.weight)
             conv_block.conv.bias.data.fill_(0.01)
 
@@ -87,14 +85,10 @@ class CrossSiameseNet(nn.Module):
 
         x = self.conv_block1(features_submodels)
         residual_features0 = x.clone()
-
+        
         x = self.conv_block2(x)
         x = self.conv_block3(x, residual_features0)
-        residual_features1 = x.clone()
-        
         x = self.conv_block4(x)
-        x = self.conv_block5(x, residual_features1)
-        x = self.conv_block6(x)
         x = self.linear_block(x)
 
         return x
