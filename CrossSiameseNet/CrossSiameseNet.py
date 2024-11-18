@@ -11,7 +11,6 @@ class ConvBlock(nn.Module):
         self.conv = nn.Conv1d(dim_in, dim_out, 1)
         self.activation_function = nn.ReLU()
         self.batch_norm = nn.BatchNorm1d(dim_out)
-        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x, residual = None):
 
@@ -21,7 +20,6 @@ class ConvBlock(nn.Module):
         x = self.conv(x)
         x = self.activation_function(x)
         x = self.batch_norm(x)
-        x = self.dropout(x)
         return x
 
 
@@ -85,6 +83,7 @@ class CrossSiameseNet(nn.Module):
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
+        features_submodels = torch.sigmoid(features_submodels)
 
         x = self.conv_block1(features_submodels)
         residual_features0 = x.clone()
@@ -151,25 +150,25 @@ class CrossSiameseNet(nn.Module):
 
 
 # # # alternative version
-# # class LinearBlock(nn.Module):
+# class LinearBlock(nn.Module):
 
-# #     def __init__(self, dim_in: int, dim_out: int):
+#     def __init__(self, dim_in: int, dim_out: int):
 
-# #         super().__init__()
-# #         self.linear = nn.Linear(dim_in, dim_out)
-# #         self.activation_function = nn.ReLU()
-# #         self.batch_norm = nn.BatchNorm1d(dim_out)
+#         super().__init__()
+#         self.linear = nn.Linear(dim_in, dim_out)
+#         self.activation_function = nn.ReLU()
+#         self.batch_norm = nn.BatchNorm1d(dim_out)
 
-# #     def forward(self, x, residual = None):
+#     def forward(self, x, residual = None):
         
-# #         x = self.linear(x)
-# #         x = self.activation_function(x)
-# #         x = self.batch_norm(x)
+#         x = self.linear(x)
+#         x = self.activation_function(x)
+#         x = self.batch_norm(x)
 
-# #         if residual is not None:
-# #             x += residual
+#         if residual is not None:
+#             x += residual
 
-# #         return x
+#         return x
     
 
 # class CrossSiameseNet(nn.Module):
