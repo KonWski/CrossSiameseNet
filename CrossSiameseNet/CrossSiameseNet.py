@@ -175,7 +175,7 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        self.linear_block1 = LinearBlock(4*self.cf_size, 2*self.cf_size)
+        self.linear_block1 = LinearBlock(self.n_models *2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
