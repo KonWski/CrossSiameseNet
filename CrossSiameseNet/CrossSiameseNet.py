@@ -156,11 +156,11 @@ class LinearBlock(nn.Module):
     def forward(self, x, residual = None):
         
         x = self.linear(x)
-        print(f"x.shape after linear: {x.shape}")
+        # print(f"x.shape after linear: {x.shape}")
         x = self.activation_function(x)
-        print(f"x.shape after activation_function: {x.shape}")
+        # print(f"x.shape after activation_function: {x.shape}")
         x = self.batch_norm(x)
-        print(f"x.shape after batch_norm: {x.shape}")
+        # print(f"x.shape after batch_norm: {x.shape}")
 
         if residual is not None:
             x += residual
@@ -203,9 +203,9 @@ class CrossSiameseNet(nn.Module):
     def forward_once(self, x):
 
         features_submodels = [model.forward_once(x) for model in self.models]
-        print(f"features_submodels[0].shape: {features_submodels[0].shape}")
+        # print(f"features_submodels[0].shape: {features_submodels[0].shape}")
         features_submodels = torch.concat(features_submodels, dim=1)
-        print(f"features_submodels.shape: {features_submodels.shape}")
+        # print(f"features_submodels.shape: {features_submodels.shape}")
 
         x = self.linear_block1(features_submodels)
 
