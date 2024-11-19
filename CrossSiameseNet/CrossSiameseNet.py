@@ -156,8 +156,11 @@ class LinearBlock(nn.Module):
     def forward(self, x, residual = None):
         
         x = self.linear(x)
+        print(f"x.shape after linear: {x.shape}")
         x = self.activation_function(x)
+        print(f"x.shape after activation_function: {x.shape}")
         x = self.batch_norm(x)
+        print(f"x.shape after batch_norm: {x.shape}")
 
         if residual is not None:
             x += residual
@@ -175,7 +178,7 @@ class CrossSiameseNet(nn.Module):
         self.models = models
         self.n_models = len(models)
         self.cf_size = models[0].cf_size
-        self.linear_block1 = LinearBlock(self.n_models *2*self.cf_size, 2*self.cf_size)
+        self.linear_block1 = LinearBlock(self.n_models * 2 *self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
         for model in self.models:
@@ -200,8 +203,9 @@ class CrossSiameseNet(nn.Module):
     def forward_once(self, x):
 
         features_submodels = [model.forward_once(x) for model in self.models]
+        print(f"features_submodels[0].shape: {features_submodels[0].shape}")
         features_submodels = torch.concat(features_submodels, dim=1)
-        features_submodels = torch.sigmoid(features_submodels)
+        print(f"features_submodels.shape: {features_submodels.shape}")
 
         x = self.linear_block1(features_submodels)
 
