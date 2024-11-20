@@ -12,12 +12,16 @@ import numpy as np
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
-                  training_type: str = None, alpha: float = None):
+                  training_type: str = None, alpha: float = None, weight_ones = True):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
     # criterion_triplet_loss = nn.TripletMarginLoss()
-    weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
+    if weight_ones:
+        weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
+    else:
+        weights_1 = 1.0
+
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
 
