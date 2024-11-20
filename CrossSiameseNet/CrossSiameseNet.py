@@ -103,36 +103,36 @@ from typing import List
     
 
 # # alternative version
-# class LinearBlock(nn.Module):
+class LinearBlock(nn.Module):
 
-#     def __init__(self, dim_in: int, dim_out: int):
+    def __init__(self, dim_in: int, dim_out: int):
 
-#         super().__init__()
-#         self.linear1 = nn.Linear(dim_in, dim_in)
-#         self.batch_norm1 = nn.BatchNorm1d(dim_in)
+        super().__init__()
+        self.linear1 = nn.Linear(dim_in, dim_in)
+        self.batch_norm1 = nn.BatchNorm1d(dim_in)
 
-#         self.linear2 = nn.Linear(dim_in, dim_out)
-#         self.batch_norm2 = nn.BatchNorm1d(dim_out)
+        self.linear2 = nn.Linear(dim_in, dim_out)
+        self.batch_norm2 = nn.BatchNorm1d(dim_out)
 
-#         self.activation_function = nn.ReLU()
+        self.activation_function = nn.ReLU()
         
 
-#     def forward(self, x, residual = False):
+    def forward(self, x, residual = False):
         
-#         if residual:
-#             residual_features = x.clone()
-#         x = self.linear1(x)
-#         x = self.activation_function(x)
-#         x = self.batch_norm1(x)
+        if residual:
+            residual_features = x.clone()
+        x = self.linear1(x)
+        x = self.activation_function(x)
+        x = self.batch_norm1(x)
 
 
-#         x = self.linear2(x)
-#         if residual:
-#             x += residual_features
-#         x = self.activation_function(x)
-#         x = self.batch_norm2(x)
+        x = self.linear2(x)
+        if residual:
+            x += residual_features
+        x = self.activation_function(x)
+        x = self.batch_norm2(x)
 
-#         return x
+        return x
 
 
 # class ConvBlock(nn.Module):
@@ -149,28 +149,28 @@ from typing import List
 
 
 # alternative version
-class LinearBlock(nn.Module):
+# class LinearBlock(nn.Module):
 
-    def __init__(self, dim_in: int, dim_out: int):
+#     def __init__(self, dim_in: int, dim_out: int):
 
-        super().__init__()
-        self.linear = nn.Linear(dim_in, dim_out)
-        self.activation_function = nn.ReLU()
-        self.batch_norm = nn.BatchNorm1d(dim_out)
+#         super().__init__()
+#         self.linear = nn.Linear(dim_in, dim_out)
+#         self.activation_function = nn.ReLU()
+#         self.batch_norm = nn.BatchNorm1d(dim_out)
 
-    def forward(self, x, residual = None):
+#     def forward(self, x, residual = None):
         
-        x = self.linear(x)
-        # print(f"x.shape after linear: {x.shape}")
-        x = self.activation_function(x)
-        # print(f"x.shape after activation_function: {x.shape}")
-        x = self.batch_norm(x)
-        # print(f"x.shape after batch_norm: {x.shape}")
+#         x = self.linear(x)
+#         # print(f"x.shape after linear: {x.shape}")
+#         x = self.activation_function(x)
+#         # print(f"x.shape after activation_function: {x.shape}")
+#         x = self.batch_norm(x)
+#         # print(f"x.shape after batch_norm: {x.shape}")
 
-        if residual is not None:
-            x += residual
+#         if residual is not None:
+#             x += residual
 
-        return x
+#         return x
     
 
 class CrossSiameseNet(nn.Module):
@@ -191,9 +191,11 @@ class CrossSiameseNet(nn.Module):
         #     for param in model.parameters():
         #         param.requires_grad = False
 
-        self.models[1].eval()
-        for param in self.models[1].parameters():
-            param.requires_grad = False
+        for id_model in range(1, len(self.models)):
+            self.models[id_model].eval()
+
+            for param in self.models[id_model].parameters():
+                param.requires_grad = False
 
         # for lin_block in [self.linear_block1]:
         #     torch.nn.init.xavier_uniform_(lin_block.linear1.weight)
