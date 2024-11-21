@@ -3,10 +3,14 @@ from torch.utils.data import DataLoader
 
 class Statistics:
 
-    def __init__(self, device):
+    def __init__(self, device, generate_stats):
         self.device = device
+        self.generate_stats = generate_stats
 
     def distance_stats(self, model, loader):
+
+        if not self.generate_stats:
+            return None, None, None
 
         anchors_transformed, anchor_labels = self._generate_embeddings(model, loader.dataset, 1000)
 
@@ -32,6 +36,7 @@ class Statistics:
         return distances_0_0_mean, distances_1_1_mean, distances_0_1_mean
     
     def _generate_embeddings(self, model, dataset, batch_size):
+        model.eval()
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
         embeddings = []
         anchor_labels = []
