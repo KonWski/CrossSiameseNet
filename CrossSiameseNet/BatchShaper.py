@@ -21,9 +21,6 @@ class BatchShaper:
         anchors_transformed_0 = anchors_transformed[indices_0,:]
 
         distances = torch.cdist(anchors_transformed, anchors_transformed)
-        distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, \
-            distances_1_1_min, distances_0_0_min, distances_0_1_min, \
-                distances_1_1_max, distances_0_0_max, distances_0_1_max = self.log_distances(distances, indices_0, indices_1)
 
         if state == "train":
 
@@ -168,50 +165,4 @@ class BatchShaper:
                 positive_mfs_transformed = model(positive_mfs)
                 negative_mfs_transformed = model(negative_mfs)
 
-        return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels, \
-            distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, distances_0_0_min, distances_0_1_min, \
-                distances_1_1_max, distances_0_0_max, distances_0_1_max
-    
-
-    def log_distances(self, distances, indices_0, indices_1):
-        
-        distances_1_1 = distances[indices_1, indices_1]
-        distances_1_1 = distances_1_1[distances_1_1 != 0]
-        
-        try:
-            distances_1_1_mean = round(torch.mean(distances_1_1).item(), 5)
-            distances_1_1_min = round(torch.min(distances_1_1).item(), 5)
-            distances_1_1_max = round(torch.max(distances_1_1).item(), 5)
-        except:
-            distances_1_1_mean = np.nan
-            distances_1_1_min = np.nan
-            distances_1_1_max = np.nan
-
-        distances_0_0 = distances[indices_0, indices_0]
-        distances_0_0 = distances_0_0[distances_0_0 != 0]
-
-        try:
-            distances_0_0_mean = round(torch.mean(distances_0_0).item(), 5)
-            distances_0_0_min = round(torch.min(distances_0_0).item(), 5)
-            distances_0_0_max = round(torch.max(distances_0_0).item(), 5)
-        except:
-            distances_0_0_mean = np.nan
-            distances_0_0_min = np.nan
-            distances_0_0_max = np.nan
-
-        distances_0_1 = []
-        for i0 in indices_0:
-            for i1 in indices_1:
-                distances_0_1.append(distances[i0, i1].item())
-
-        try:
-            distances_0_1_mean = round(sum(distances_0_1) / len(distances_0_1), 5)
-            distances_0_1_min = round(min(distances_0_1), 5)
-            distances_0_1_max = round(max(distances_0_1), 5)
-        except:
-            distances_0_1_mean = np.nan
-            distances_0_1_min = np.nan
-            distances_0_1_max = np.nan
-
-        return distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
-            distances_0_0_min, distances_0_1_min, distances_1_1_max, distances_0_0_max, distances_0_1_max
+        return anchors_transformed, positive_mfs_transformed, negative_mfs_transformed, anchor_labels
