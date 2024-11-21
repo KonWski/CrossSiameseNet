@@ -8,13 +8,10 @@ class Statistics:
 
     def distance_stats(self, model, loader):
 
-        anchors_mf, anchor_labels = self._generate_embeddings(model, loader.dataset, 1000)
+        anchors_transformed, anchor_labels = self._generate_embeddings(model, loader.dataset, 1000)
 
         indices_1 = (anchor_labels == 1).nonzero()[:,0].tolist()
         indices_0 = (anchor_labels == 0).nonzero()[:,0].tolist()
-
-        anchors_mf = anchors_mf.to(self.device)
-        anchors_transformed = model(anchors_mf)
 
         distances = torch.cdist(anchors_transformed, anchors_transformed)
 
