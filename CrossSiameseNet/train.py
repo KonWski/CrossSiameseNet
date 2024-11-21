@@ -92,6 +92,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         checkpoint['train_loss'] = train_loss
         checkpoint['test_loss'] = test_loss
         checkpoint['used_fixed_training_triplets'] = use_fixed_training_triplets
+        checkpoint["training_type"] = training_type
+        checkpoint["weight_ones"] = str(weight_ones)
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
