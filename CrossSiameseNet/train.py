@@ -12,7 +12,7 @@ from CrossSiameseNet.Statistics import Statistics
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
-                  training_type: str = None, alpha: float = None, weight_ones = True):
+                  training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
@@ -23,7 +23,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
-    statistics = Statistics(device)
+    statistics = Statistics(device, generate_stats)
 
     train_loss = []
     train_distances_0_0_mean = []
