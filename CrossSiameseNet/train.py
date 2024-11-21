@@ -8,7 +8,7 @@ import pandas as pd
 from CrossSiameseNet.checkpoints import save_checkpoint
 from CrossSiameseNet.BatchShaper import BatchShaper
 from CrossSiameseNet.loss import WeightedTripletMarginLoss
-import numpy as np
+from CrossSiameseNet.Statistics import Statistics
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
@@ -16,7 +16,6 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
-    # criterion_triplet_loss = nn.TripletMarginLoss()
     if weight_ones:
         weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
     else:
@@ -24,9 +23,16 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
+    statistics = Statistics(device)
 
     train_loss = []
+    train_distances_0_0_mean = []
+    train_distances_1_1_mean = []
+    train_distances_0_1_mean = []
     test_loss = []
+    test_distances_0_0_mean = []
+    test_distances_1_1_mean = []
+    test_distances_0_1_mean = []
 
     for epoch in range(0, n_epochs):
         
@@ -40,22 +46,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             
             # calculated parameters
             running_loss = 0.0
-            distances_1_1_means = []
-            distances_0_0_means = []
-            distances_0_1_means = []
-            distances_1_1_maxs = []
-            distances_0_0_maxs = []
-            distances_0_1_maxs = []
-            distances_1_1_mins = []
-            distances_0_0_mins = []
-            distances_0_1_mins = []
-
-            labels_1 = []
 
             if state == "train":
                 model.train()
                 loader.dataset.shuffle_data(train_loader.batch_size)
-
             else:
                 model.eval()
 
@@ -64,23 +58,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 with torch.set_grad_enabled(state == 'train'):
                     
                     optimizer.zero_grad()
-
-                    anchor_mf, positive_mf, negative_mf, anchor_label, distances_1_1_mean, distances_0_0_mean, distances_0_1_mean, distances_1_1_min, \
-                        distances_0_0_min, distances_0_1_min, distances_1_1_max, \
-                            distances_0_0_max, distances_0_1_max = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
-
+                    anchor_mf, positive_mf, negative_mf, anchor_label = \
+                        batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
-                    
-                    distances_1_1_means.append(distances_1_1_mean)
-                    distances_0_0_means.append(distances_0_0_mean)
-                    distances_0_1_means.append(distances_0_1_mean)
-                    distances_1_1_mins.append(distances_1_1_min)
-                    distances_0_0_mins.append(distances_0_0_min)
-                    distances_0_1_mins.append(distances_0_1_min)
-                    distances_1_1_maxs.append(distances_1_1_max)
-                    distances_0_0_maxs.append(distances_0_0_max)
-                    distances_0_1_maxs.append(distances_0_1_max)
-                    labels_1.append(len((anchor_label == 1).nonzero()[:,0].tolist()))
 
                     if state == "train":
                         loss.backward()
@@ -89,44 +69,22 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
-            avg_means_epoch_distances_1_1 = round(np.average([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            avg_means_epoch_distances_0_1 = round(np.average([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            avg_means_epoch_distances_0_0 = round(np.average([m for m in distances_0_0_means if not np.isnan(m)]), 5)
-
-            min_means_epoch_distances_1_1 = round(min([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            min_means_epoch_distances_0_1 = round(min([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            min_means_epoch_distances_0_0 = round(min([m for m in distances_0_0_means if not np.isnan(m)]), 5)
-
-            max_means_epoch_distances_1_1 = round(max([m for m in distances_1_1_means if not np.isnan(m)]), 5)
-            max_means_epoch_distances_0_1 = round(max([m for m in distances_0_1_means if not np.isnan(m)]), 5)
-            max_means_epoch_distances_0_0 = round(max([m for m in distances_0_0_means if not np.isnan(m)]), 5)
-
-            distances_1_1_min = round(min([m for m in distances_1_1_mins if not np.isnan(m)]), 5)
-            distances_0_1_min = round(min([m for m in distances_0_1_mins if not np.isnan(m)]), 5)
-            distances_0_0_min = round(min([m for m in distances_0_0_mins if not np.isnan(m)]), 5)
-
-            distances_1_1_max = round(max([m for m in distances_1_1_maxs if not np.isnan(m)]), 5)
-            distances_0_1_max = round(max([m for m in distances_0_1_maxs if not np.isnan(m)]), 5)
-            distances_0_0_max = round(max([m for m in distances_0_0_maxs if not np.isnan(m)]), 5)  
+            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = statistics.distance_stats(model, loader)
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-            logging.info(f"avg_means_epoch_distances_1_1: {avg_means_epoch_distances_1_1}, avg_means_epoch_distances_0_1: {avg_means_epoch_distances_0_1}, avg_means_epoch_distances_0_0: {avg_means_epoch_distances_0_0}")
-            logging.info(f"min_means_epoch_distances_1_1: {min_means_epoch_distances_1_1}, min_means_epoch_distances_0_1: {min_means_epoch_distances_0_1}, min_means_epoch_distances_0_0: {min_means_epoch_distances_0_0}")
-            logging.info(f"max_means_epoch_distances_1_1: {max_means_epoch_distances_1_1}, max_means_epoch_distances_0_1: {max_means_epoch_distances_0_1}, max_means_epoch_distances_0_0: {max_means_epoch_distances_0_0}")
-            logging.info(f"distances_1_1_min: {distances_1_1_min}, distances_0_1_min: {distances_0_1_min}, distances_0_0_min: {distances_0_0_min}")
-            logging.info(f"distances_1_1_max: {distances_1_1_max}, distances_0_1_max: {distances_0_1_max}, distances_0_0_min: {distances_0_0_max}")
-
-            # labels_1.sort()
-            # logging.info(f"min(labels_1): {min(labels_1)}")
-            # logging.info(f"labels_1: {labels_1}")
-            # logging.info(f"max(labels_1): {max(labels_1)}")
-
+            logging.info(f"distances_0_0_mean: {distances_0_0_mean}, distances_1_1_mean: {distances_1_1_mean}, distances_0_1_mean: {distances_0_1_mean}")
 
             # update report
             if state == "train":
                 train_loss.append(epoch_loss)
+                train_distances_0_0_mean.append(distances_0_0_mean)
+                train_distances_1_1_mean.append(distances_1_1_mean)
+                train_distances_0_1_mean.append(distances_0_1_mean)
             else:
                 test_loss.append(epoch_loss)
+                test_distances_0_0_mean.append(distances_0_0_mean)
+                test_distances_1_1_mean.append(distances_1_1_mean)
+                test_distances_0_1_mean.append(distances_0_1_mean)
 
         # save model to checkpoint
         checkpoint["epoch"] = epoch
@@ -144,7 +102,14 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     report_df = pd.DataFrame({
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
         "train_loss": train_loss, 
-        "test_loss": test_loss})
+        "test_loss": test_loss,
+        "train_distances_0_0_mean": train_distances_0_0_mean,
+        "train_distances_1_1_mean": train_distances_1_1_mean,
+        "train_distances_0_1_mean": train_distances_0_1_mean,
+        "test_distances_0_0_mean": test_distances_0_0_mean,
+        "test_distances_1_1_mean": test_distances_1_1_mean,
+        "test_distances_0_1_mean": test_distances_0_1_mean
+        })
     report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
 
 
