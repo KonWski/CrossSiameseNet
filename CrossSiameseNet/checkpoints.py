@@ -36,21 +36,20 @@ def load_checkpoint(model, checkpoint_path: str):
                 
     '''
     checkpoint = torch.load(checkpoint_path)
-    cf_size = 2048
 
     # load parameters from checkpoint
     model.load_state_dict(checkpoint["model_state_dict"])
 
     # print loaded parameters
     logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
-    logging.info(f"Dataset: {checkpoint['dataset']}")    
-    logging.info(f"Epoch: {checkpoint['epoch']}")
+    logging.info(f"Dataset: {checkpoint.get('dataset')}")    
+    logging.info(f"Epoch: {checkpoint.get('epoch')}")
     logging.info(f"Used fixed training triplets: {checkpoint.get('used_fixed_training_triplets')}")
-    logging.info(f"weight_ones: {checkpoint['weight_ones']}")
-    logging.info(f"training_type: {checkpoint['training_type']}")
-    logging.info(f"Save dttm: {checkpoint['save_dttm']}")
-    logging.info(f"Train loss: {checkpoint['train_loss']}")    
-    logging.info(f"Test loss: {checkpoint['test_loss']}")
+    logging.info(f"weight_ones: {checkpoint.get('weight_ones')}")
+    logging.info(f"training_type: {checkpoint.get('training_type')}")
+    logging.info(f"Save dttm: {checkpoint.get('save_dttm')}")
+    logging.info(f"Train loss: {checkpoint.get('train_loss')}")    
+    logging.info(f"Test loss: {checkpoint.get('test_loss')}")
 
     logging.info(8*"-")
 
