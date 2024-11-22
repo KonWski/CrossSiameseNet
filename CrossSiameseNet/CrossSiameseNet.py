@@ -62,15 +62,10 @@ class CrossSiameseNet(nn.Module):
         self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
 
         # turn off grads in all parameters 
-        # for model in self.models:
-        #     model.eval()
-        #     for param in model.parameters():
-        #         param.requires_grad = False
-
-        # turn off grads only in non HIV model
-        self.models[1].eval()
-        for param in self.models[1].parameters():
-            param.requires_grad = False
+        for model in self.models:
+            model.eval()
+            for param in model.parameters():
+                param.requires_grad = False
 
         # initialize the weights
         for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
@@ -86,7 +81,6 @@ class CrossSiameseNet(nn.Module):
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels = torch.stack(features_submodels, dim=-2)
-        features_submodels = torch.sigmoid(features_submodels)
 
         x = self.conv_block1(features_submodels)
         residual_features0 = x.clone()
