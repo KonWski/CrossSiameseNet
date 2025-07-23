@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-from deepchem.data.datasets import Dataset as dc_Datset
 from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_freesolv, load_tox21
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
