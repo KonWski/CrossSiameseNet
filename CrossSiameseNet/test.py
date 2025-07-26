@@ -1,26 +1,20 @@
 import torch
-from CrossSiameseNet.datasets.cf_datasets import get_dataset, MolDataset, MolDatasetTriplet
-from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
-from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression
-import deepchem as dc
-from CrossSiameseNet.checkpoints import load_checkpoint
 from torch.utils.data import DataLoader
-from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import precision_score, accuracy_score, recall_score, f1_score
-import gc
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 import numpy as np
-import pandas as pd
 
 def generate_embeddings(model, dataset, batch_size, device):
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     embeddings = []
+    anchor_labels = []
+
     for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
         anchor_mf = anchor_mf.to(device)
         embeddings.append(model(anchor_mf).cpu())
-    return torch.cat(embeddings, dim=0)
+        anchor_labels.append(anchor_label.cpu())
+    
+    return torch.cat(embeddings, dim=0), torch.cat(anchor_labels, dim=0)
 
 
 def test_net(model, train_dataset, test_dataset, val_dataset, device):
@@ -32,13 +26,9 @@ def test_net(model, train_dataset, test_dataset, val_dataset, device):
     test_precision = []
     test_recall = []
 
-    train_embeddings, labels = generate_embeddings(model, train_dataset, 1000)
-    test_embeddings, labels = generate_embeddings(model, test_dataset, 1000)
-    val_embeddings, labels = generate_embeddings(model, test_dataset, 1000)
-
-    y_train = train_dataset.y
-    y_test = test_dataset.y
-    y_val = val_dataset.y
+    train_embeddings, y_train = generate_embeddings(model, train_dataset, 1000)
+    test_embeddings, y_test = generate_embeddings(model, test_dataset, 1000)
+    val_embeddings, y_val = generate_embeddings(model, test_dataset, 1000)
 
     # fit model
     knn = KNeighborsClassifier(n_neighbors=4)
