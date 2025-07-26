@@ -17,7 +17,7 @@ def generate_embeddings(model, dataset, batch_size, device):
     return torch.cat(embeddings, dim=0), torch.cat(anchor_labels, dim=0)
 
 
-def test_net(model, train_dataset, test_dataset, val_dataset, device):
+def test_net(model, train_dataset, test_dataset, val_dataset):
 
     train_accuracy = []
     train_precision = []
@@ -28,7 +28,7 @@ def test_net(model, train_dataset, test_dataset, val_dataset, device):
 
     train_embeddings, y_train = generate_embeddings(model, train_dataset, 1000)
     test_embeddings, y_test = generate_embeddings(model, test_dataset, 1000)
-    val_embeddings, y_val = generate_embeddings(model, test_dataset, 1000)
+    val_embeddings, y_val = generate_embeddings(model, val_dataset, 1000)
 
     # fit model
     knn = KNeighborsClassifier(n_neighbors=4)
