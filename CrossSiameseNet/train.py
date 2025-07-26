@@ -112,7 +112,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         "test_distances_0_1_mean": test_distances_0_1_mean
         })
     report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
-
+    
+    return model
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
             test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
