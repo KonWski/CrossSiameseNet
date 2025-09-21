@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 from deepchem.data.datasets import Dataset as dc_Datset
-from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_freesolv, load_tox21
+from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
 import torch
@@ -160,10 +160,7 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
     
     elif dataset_name == "lipo":
         _, datasets, _ = load_lipo(featurizer, splitter)
-    
-    elif dataset_name == "freesolv":
-        _, datasets, _ = load_freesolv(featurizer, splitter)
-    
+        
     elif dataset_name[:5] == "tox21":
         task = dataset_name[dataset_name.find("_")+1:]
         _, datasets, _ = load_tox21(featurizer, splitter, tasks=[task])
