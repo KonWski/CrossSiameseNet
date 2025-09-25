@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-from deepchem.data.datasets import Dataset as dc_Datset
 from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
@@ -7,10 +6,11 @@ import torch
 import random
 import numpy as np
 import logging
+from CrossSiameseNet.datasets.datasets_utils import load_dataset
 
 class MolDataset(Dataset):
 
-    def __init__(self, dc_dataset: dc_Datset):
+    def __init__(self, X: np.array, y: np.array, smiles):
         """
         Attributes
         ----------
@@ -20,9 +20,9 @@ class MolDataset(Dataset):
             - y -> labels
             - ids -> smiles
         """
-        self.X = torch.from_numpy(dc_dataset.X).float()
-        self.y = torch.from_numpy(dc_dataset.y).float()
-        self.smiles = dc_dataset.ids
+        self.X = X
+        self.y = y
+        self.smiles = smiles
         self.n_molecules = len(self.smiles)
 
     def __len__(self):
@@ -45,11 +45,11 @@ class MolDataset(Dataset):
 
 class MolDatasetTriplet(MolDataset):
 
-    def __init__(self, dc_dataset: dc_Datset, train: bool, oversample: int = None, 
+    def __init__(self, X: np.array, y: np.array, smiles, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
                  training_type: str = "hard_batch_learning"):
         
-        super().__init__(dc_dataset)
+        super().__init__(X, y, smiles)
         self.train = train
         self.oversample = oversample
         self.use_fixed_triplets = use_fixed_triplets
@@ -221,7 +221,6 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
     - HIV (inhibit HIV replication)
     - Delaney (solubility)
     - Lipo (lipophilicity)
-    - FreeSolv (octanol/water distribution)
     - Tox21
     '''
 
@@ -230,36 +229,19 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
         return None
 
     featurizer = CircularFingerprint(cf_radius, cf_size)
+    X_train, y_train, smiles_train, X_val, y_val, smiles_val, \
+        X_test, y_test, smiles_test = load_dataset(dataset_name, featurizer, splitter)    
 
-    if dataset_name == "hiv":
-        _, datasets, _ = load_hiv(featurizer, splitter)
 
-    elif dataset_name == "delaney":
-        _, datasets, _ = load_delaney(featurizer, splitter)
+    # convert DeepChems datasets to Torch wrappers
+    if triplet_loss:
+        train_dataset = MolDatasetTriplet(X_train, y_train, smiles_train, True, oversample, use_fixed_train_triplets, 
+                                            seed_fixed_train_triplets, training_type)
+        valid_dataset = MolDatasetTriplet(X_test, y_test, smiles_test, False, False, True, 123)
+        test_dataset = MolDatasetTriplet(X_val, y_val, smiles_val, False, False, True, 123)
     
-    elif dataset_name == "lipo":
-        _, datasets, _ = load_lipo(featurizer, splitter)
-    
-    elif dataset_name[:5] == "tox21":
-        task = dataset_name[dataset_name.find("_")+1:]
-        _, datasets, _ = load_tox21(featurizer, splitter, tasks=[task])
-
-    if splitter is not None:
-
-        # convert DeepChems datasets to Torch wrappers
-        if triplet_loss:
-            train_dataset = MolDatasetTriplet(datasets[0], True, oversample, use_fixed_train_triplets, 
-                                              seed_fixed_train_triplets, training_type)
-            valid_dataset = MolDatasetTriplet(datasets[1], False, False, True, 123)
-            test_dataset = MolDatasetTriplet(datasets[2], False, False, True, 123)
-        
-        else:
-            train_dataset, valid_dataset, test_dataset = \
-                MolDataset(datasets[0]), MolDataset(datasets[1]), MolDataset(datasets[2])
-
-        return train_dataset, valid_dataset, test_dataset
-
-    # dataset wrapped in one object
     else:
+        train_dataset, valid_dataset, test_dataset = \
+            MolDataset(X_train, y_train, smiles_train), MolDataset(X_val, y_val, smiles_val), MolDataset(X_test, y_test, smiles_test)
 
-        return datasets[0]
+    return train_dataset, valid_dataset, test_dataset
