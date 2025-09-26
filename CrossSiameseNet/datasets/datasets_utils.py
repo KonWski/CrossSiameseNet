@@ -36,9 +36,9 @@ def load_hiv_esol(featurizer, splitter):
     _, datasets, _ = load_hiv(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
-    X_train, smiles_train = train_dataset.X, train_dataset.smiles
-    X_val, smiles_val = val_dataset.X, val_dataset.smiles
-    X_test, smiles_test = test_dataset.X, test_dataset.smiles
+    X_train, smiles_train = train_dataset.X, train_dataset.ids
+    X_val, smiles_val = val_dataset.X, val_dataset.ids
+    X_test, smiles_test = test_dataset.X, test_dataset.ids
 
     y_train = np.array([esol_predict(smiles) for smiles in smiles_train])
     y_val = np.array([esol_predict(smiles) for smiles in smiles_val])

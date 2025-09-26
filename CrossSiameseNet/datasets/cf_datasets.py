@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
 import torch
@@ -231,7 +230,6 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
     featurizer = CircularFingerprint(cf_radius, cf_size)
     X_train, y_train, smiles_train, X_val, y_val, smiles_val, \
         X_test, y_test, smiles_test = load_dataset(dataset_name, featurizer, splitter)    
-
 
     # convert DeepChems datasets to Torch wrappers
     if triplet_loss:
