@@ -9,7 +9,7 @@ from CrossSiameseNet.datasets.datasets_utils import load_dataset
 
 class MolDataset(Dataset):
 
-    def __init__(self, X: np.array, y: np.array, smiles):
+    def __init__(self, X, y, smiles):
         """
         Attributes
         ----------
@@ -19,8 +19,8 @@ class MolDataset(Dataset):
             - y -> labels
             - ids -> smiles
         """
-        self.X = X
-        self.y = y
+        self.X = torch.tensor(X, dtype=torch.float32)
+        self.y = torch.tensor(y, dtype=torch.float32)
         self.smiles = smiles
         self.n_molecules = len(self.smiles)
 
@@ -44,7 +44,7 @@ class MolDataset(Dataset):
 
 class MolDatasetTriplet(MolDataset):
 
-    def __init__(self, X: np.array, y: np.array, smiles, train: bool, oversample: int = None, 
+    def __init__(self, X, y, smiles, train: bool, oversample: int = None, 
                  use_fixed_triplets: bool = False, seed_fixed_triplets: int = None,
                  training_type: str = "hard_batch_learning"):
         
