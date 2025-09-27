@@ -147,7 +147,6 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
 
                     outputs = model(mfs0, mfs1)
                     loss = criterion(outputs, targets)
-                    print(f"loss.dtype: {loss.dtype}")
 
                     if state == "train":
                         loss.backward()
