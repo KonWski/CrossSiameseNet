@@ -25,9 +25,9 @@ def load_dataset(dataset_name, featurizer, splitter):
         raise Exception(f"Dataset {dataset_name} not implemented")
 
     train_dataset, val_dataset, test_dataset = datasets
-    X_train, y_train, smiles_train = train_dataset.X, train_dataset.y, train_dataset.smiles
-    X_val, y_val, smiles_val = val_dataset.X, val_dataset.y, val_dataset.smiles
-    X_test, y_test, smiles_test = test_dataset.X, test_dataset.y, test_dataset.smiles
+    X_train, y_train, smiles_train = train_dataset.X, train_dataset.y, train_dataset.ids
+    X_val, y_val, smiles_val = val_dataset.X, val_dataset.y, val_dataset.ids
+    X_test, y_test, smiles_test = test_dataset.X, test_dataset.y, test_dataset.ids
 
     return X_train, y_train, smiles_train, X_val, y_val, smiles_val, X_test, y_test, smiles_test
 
