@@ -174,8 +174,8 @@ class MolDatasetTriplet(MolDataset):
 
         # print(f"nominal_n_1_observations: {nominal_n_1_observations}")
 
-        indices_free_1 = set(self.indices_1.copy())
-        indices_free_0 = set(self.indices_0.copy())
+        indices_free_1 = tuple(set(self.indices_1.copy()))
+        indices_free_0 = tuple(set(self.indices_0.copy()))
         indices_updated = []
 
         for n_batch in range(n_batches):
@@ -192,13 +192,13 @@ class MolDatasetTriplet(MolDataset):
             # print(f"n_left_observations: {n_left_observations}")
 
             # select random indices for updated dataset
-            print(f"indices_free_0: {indices_free_0}")
-            print(f"type(indices_free_0): {type(indices_free_0)}")
-            print(f"n_0_observations: {n_0_observations}")
+            # print(f"indices_free_0: {indices_free_0}")
+            # print(f"type(indices_free_0): {type(indices_free_0)}")
+            # print(f"n_0_observations: {n_0_observations}")
 
-            print(f"indices_free_1: {indices_free_1}")
-            print(f"type(indices_free_1): {type(indices_free_1)}")
-            print(f"n_1_observations: {n_1_observations}")
+            # print(f"indices_free_1: {indices_free_1}")
+            # print(f"type(indices_free_1): {type(indices_free_1)}")
+            # print(f"n_1_observations: {n_1_observations}")
 
             ids0 = random.sample(indices_free_0, n_0_observations)
             ids1 = random.sample(indices_free_1, n_1_observations)
