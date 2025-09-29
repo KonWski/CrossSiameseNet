@@ -37,8 +37,6 @@ class BatchShaper:
                         distances_pos = distances[anchor_iter, indices_0]
                         distances_neg = distances[anchor_iter, indices_1]
 
-                        print(f"distances_pos.shape: {distances_pos.shape}")
-                        print(f"distances_neg.shape: {distances_neg.shape}")
                         id_distance_pos_max = distances_pos.argmax().item()
                         id_distance_neg_min = distances_neg.argmin().item()
                         positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos_max, :])
