@@ -15,7 +15,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                   training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False):
     
     model = model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-7)
+    optimizer = Adam(model.parameters(), lr=1e-6)
     if weight_ones:
         weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
     else:
