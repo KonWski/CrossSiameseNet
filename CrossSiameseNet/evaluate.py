@@ -6,10 +6,10 @@ from torch.utils.data import DataLoader
 from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
-def evaluate(model, train_dataset, test_dataset, y_train, y_test):
+def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
 
-    train_embeddings, _ = generate_embeddings(model, train_dataset, 1000)
-    test_embeddings, _ = generate_embeddings(model, test_dataset, 1000)
+    train_embeddings, _ = generate_embeddings(model, train_dataset, 1000, device)
+    test_embeddings, _ = generate_embeddings(model, test_dataset, 1000, device)
 
     # fit model
     knn = KNeighborsClassifier(n_neighbors=4)
