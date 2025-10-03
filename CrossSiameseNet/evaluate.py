@@ -62,7 +62,10 @@ def generate_embeddings(model, dataset, batch_size, device):
     anchor_labels = []
     for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
         anchor_mf = anchor_mf.to(device)
-        embeddings.append(model(anchor_mf).cpu())
+        print(f"type(anchor_mf): {type(anchor_mf)}")
+        model_anchor_mf = model(anchor_mf)
+        print(f"type(model_anchor_mf): {type(model_anchor_mf)}")
+        embeddings.append(model_anchor_mf.cpu())
         anchor_labels.append(anchor_label.cpu())
     return torch.cat(embeddings, dim=0), torch.cat(embeddings, dim=0)
 
