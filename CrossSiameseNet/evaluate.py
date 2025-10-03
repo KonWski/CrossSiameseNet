@@ -3,8 +3,8 @@ from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from SiameseMolNet import SiameseMolNet, SiameseMolNetRegression
-from CrossSiameseNet import CrossSiameseNet
+from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression
+from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test):
 
@@ -79,7 +79,7 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
         submodel_name = model_name[12:]
         if len(submodel_name) > 0:
 
-            if submodel_name == "SMN_LIPO" or submodel_name == "SMN_DELANEY" or model_name == "HIV_HIV_ESOL":
+            if submodel_name in ["SMN_LIPO", "SMN_DELANEY", "SMN_HIV_ESOL"]:
                 second_submodel = SiameseMolNetRegression(cf_size)
             else:
                 second_submodel = SiameseMolNet(cf_size)
