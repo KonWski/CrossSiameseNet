@@ -66,8 +66,8 @@ def generate_embeddings(model, dataset, batch_size, device):
         anchor_mf = anchor_mf.to(device)
         embedding_chunk = model(anchor_mf)
 
-        anchor_mf = anchor_mf.cpu()
-        embedding_chunk = embedding_chunk.cpu()
+        anchor_mf = anchor_mf.detach().cpu()
+        embedding_chunk = embedding_chunk.detach().cpu()
 
         embeddings.append(embedding_chunk)
 
