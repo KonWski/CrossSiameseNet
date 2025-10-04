@@ -8,8 +8,8 @@ from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
 
-    train_embeddings, _ = generate_embeddings(model, train_dataset, 1000, device)
-    test_embeddings, _ = generate_embeddings(model, test_dataset, 1000, device)
+    train_embeddings = generate_embeddings(model, train_dataset, 1000, device)
+    test_embeddings = generate_embeddings(model, test_dataset, 1000, device)
 
     # fit model
     knn = KNeighborsClassifier(n_neighbors=4)
