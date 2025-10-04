@@ -69,14 +69,13 @@ def generate_embeddings(model, dataset, batch_size, device):
     return torch.cat(embeddings, dim=0)
 
 
-def load_dummy_model(model_name: str, device, cf_size: int = 2048):
+def load_dummy_model(model_name: str, cf_size: int = 2048):
 
     if model_name == "SMN_HIV":
         dummy_model = SiameseMolNet(cf_size)
     else:
         # first submodel
         smn_hiv = SiameseMolNet(cf_size)
-        smn_hiv.to(device)
 
         # second submodel
         submodel_name = model_name[12:]
@@ -87,12 +86,11 @@ def load_dummy_model(model_name: str, device, cf_size: int = 2048):
             else:
                 second_submodel = SiameseMolNet(cf_size)
             
-            second_submodel.to(device)
             submodels = [smn_hiv, second_submodel]
+
         else:
             submodels = [smn_hiv]
 
         dummy_model = CrossSiameseNet(submodels)
-        dummy_model.to(device)
 
     return dummy_model
