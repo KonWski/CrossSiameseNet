@@ -8,8 +8,8 @@ from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
 
-    train_embeddings, _ = generate_embeddings(model, train_dataset, 100, device)
-    test_embeddings, _ = generate_embeddings(model, test_dataset, 100, device)
+    train_embeddings, _ = generate_embeddings(model, train_dataset, 1000, device)
+    test_embeddings, _ = generate_embeddings(model, test_dataset, 1000, device)
 
     # fit model
     knn = KNeighborsClassifier(n_neighbors=4)
@@ -62,7 +62,6 @@ def generate_embeddings(model, dataset, batch_size, device):
     embeddings = []
 
     for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
-        print(f"batch_id: {batch_id}")
         anchor_mf = anchor_mf.to(device)
         embedding_chunk = model(anchor_mf)
 
