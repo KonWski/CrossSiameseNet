@@ -57,15 +57,16 @@ def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
 
 
 def generate_embeddings(model, dataset, batch_size, device):
+
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     embeddings = []
-    anchor_labels = []
+
     for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
         anchor_mf = anchor_mf.to(device)
         model_anchor_mf = model(anchor_mf)
         embeddings.append(model_anchor_mf.cpu())
-        anchor_labels.append(anchor_label.cpu())
-    return torch.cat(embeddings, dim=0), torch.cat(embeddings, dim=0)
+
+    return torch.cat(embeddings, dim=0)
 
 
 def load_dummy_model(model_name: str, device, cf_size: int = 2048):
