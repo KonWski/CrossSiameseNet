@@ -94,3 +94,13 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
         dummy_model = CrossSiameseNet(submodels)
 
     return dummy_model
+
+
+def send_model_to_device(model, device):
+
+    for submodel in model.models:
+        submodel.to(device)
+
+    model.to(device)
+
+    return model
