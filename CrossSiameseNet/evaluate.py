@@ -62,6 +62,7 @@ def generate_embeddings(model, dataset, batch_size, device):
     embeddings = []
 
     for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
+        print(f"batch_id: {batch_id}")
         anchor_mf = anchor_mf.to(device)
         model_anchor_mf = model(anchor_mf)
         embeddings.append(model_anchor_mf.cpu())
