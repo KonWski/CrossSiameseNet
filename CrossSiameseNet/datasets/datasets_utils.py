@@ -19,7 +19,7 @@ def load_dataset(dataset_name, featurizer, splitter):
         datasets = load_hiv_logp(featurizer, splitter)
 
     elif dataset_name[:7] == "hiv_pmi":
-        pmi_id = int(dataset_name[8])
+        pmi_id = int(dataset_name[7])
         datasets = load_hiv_pmi(featurizer, splitter, pmi_id)
 
     elif dataset_name == "hiv_planarity":
