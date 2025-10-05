@@ -155,6 +155,7 @@ def load_hiv_planarity(featurizer, splitter):
 def compute_planarity(smiles: str):
 
     mol = Chem.MolFromSmiles(smiles)
+    mol = Chem.AddHs(mol)
     AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
     pbf = rdMolDescriptors.CalcPBF(mol)
     return pbf
@@ -182,6 +183,7 @@ def load_hiv_pmi(featurizer, splitter, pmi_id):
 def compute_pmis(smiles: str, pmi_id: int):
 
     mol = Chem.MolFromSmiles(smiles)
+    mol = Chem.AddHs(mol)
     AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
     
     if pmi_id == 0:
