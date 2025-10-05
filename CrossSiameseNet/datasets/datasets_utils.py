@@ -157,7 +157,10 @@ def compute_planarity(smiles: str):
     mol = Chem.MolFromSmiles(smiles)
     mol = Chem.AddHs(mol)
     AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
-    pbf = rdMolDescriptors.CalcPBF(mol)
+    try:
+        pbf = rdMolDescriptors.CalcPBF(mol)
+    except:
+        print(f"smiles: {smiles}")
     return pbf
 
 
