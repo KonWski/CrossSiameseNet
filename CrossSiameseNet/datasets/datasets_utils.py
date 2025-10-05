@@ -25,6 +25,9 @@ def load_dataset(dataset_name, featurizer, splitter):
     elif dataset_name == "hiv_planarity":
         datasets = load_hiv_planarity(featurizer, splitter)
 
+    elif dataset_name == "hiv_molmr":
+        datasets = load_hiv_molmr(featurizer, splitter)
+
     elif dataset_name == "delaney":
         _, datasets, _ = load_delaney(featurizer, splitter)
     
