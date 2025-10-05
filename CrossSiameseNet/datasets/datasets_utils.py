@@ -198,4 +198,4 @@ class DummyDataset():
     def __init__(self, X, y, smiles):
         self.X = X
         self.y = y
-        self.smiles = smiles
+        self.ids = smiles
