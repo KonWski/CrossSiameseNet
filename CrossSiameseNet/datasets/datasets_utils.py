@@ -201,6 +201,33 @@ def compute_pmis(smiles: str, pmi_id: int):
     
     return pmi
 
+
+def load_hiv_molmr(featurizer, splitter):
+    '''Crippen’s Molar Refractivity (MR)'''
+
+    _, datasets, _ = load_hiv(featurizer, splitter)
+    train_dataset, val_dataset, test_dataset = datasets
+
+    X_train, smiles_train = train_dataset.X, train_dataset.ids
+    X_val, smiles_val = val_dataset.X, val_dataset.ids
+    X_test, smiles_test = test_dataset.X, test_dataset.ids
+
+    y_train = np.array([compute_molmr(smiles) for smiles in smiles_train])
+    y_val = np.array([compute_molmr(smiles) for smiles in smiles_val])
+    y_test = np.array([compute_molmr(smiles) for smiles in smiles_test])
+    
+    return DummyDataset(X_train, y_train, smiles_train), \
+        DummyDataset(X_val, y_val, smiles_val), \
+        DummyDataset(X_test, y_test, smiles_test)
+
+
+def compute_molmr(smiles: str):
+
+    mol = Chem.MolFromSmiles(smiles)
+    molmr = Crippen.MolMR(mol)
+    return molmr
+
+
 class DummyDataset():
 
     def __init__(self, X, y, smiles):
