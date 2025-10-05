@@ -156,11 +156,11 @@ def compute_planarity(smiles: str):
 
     mol = Chem.MolFromSmiles(smiles)
     mol = Chem.AddHs(mol)
-    AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
-    try:
-        pbf = rdMolDescriptors.CalcPBF(mol)
-    except:
-        print(f"smiles: {smiles}")
+    params = AllChem.ETKDGv3()
+    params.randomSeed = 0xF00D
+    params.maxAttempts = 2000
+    AllChem.EmbedMolecule(mol, params)
+    pbf = rdMolDescriptors.CalcPBF(mol)
     return pbf
 
 
@@ -187,7 +187,10 @@ def compute_pmis(smiles: str, pmi_id: int):
 
     mol = Chem.MolFromSmiles(smiles)
     mol = Chem.AddHs(mol)
-    AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
+    params = AllChem.ETKDGv3()
+    params.randomSeed = 0xF00D
+    params.maxAttempts = 2000
+    AllChem.EmbedMolecule(mol, params)
     
     if pmi_id == 0:
         pmi = rdMolDescriptors.CalcPMI1(mol)
