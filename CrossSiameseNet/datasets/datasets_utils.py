@@ -2,7 +2,7 @@ from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from rdkit import Chem
 from rdkit.Chem import Crippen, Descriptors
 import numpy as np
-from rdkit.Chem import Descriptors, rdMolDescriptors, AllChem
+from rdkit.Chem import Descriptors, rdMolDescriptors, AllChem, Crippen
 
 def load_dataset(dataset_name, featurizer, splitter):
     
@@ -155,7 +155,7 @@ def load_hiv_planarity(featurizer, splitter):
 def compute_planarity(smiles: str):
 
     mol = Chem.MolFromSmiles(smiles)
-    AllChem.EmbedMolecule(mol)
+    AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
     pbf = rdMolDescriptors.CalcPBF(mol)
     return pbf
 
@@ -182,7 +182,7 @@ def load_hiv_pmi(featurizer, splitter, pmi_id):
 def compute_pmis(smiles: str, pmi_id: int):
 
     mol = Chem.MolFromSmiles(smiles)
-    AllChem.EmbedMolecule(mol)
+    AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
     
     if pmi_id == 0:
         pmi = rdMolDescriptors.CalcPMI1(mol)
