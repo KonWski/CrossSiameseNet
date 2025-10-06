@@ -8,7 +8,7 @@ def save_checkpoint(checkpoint: dict, checkpoint_path: str):
     '''
 
     if not os.path.isdir(checkpoint_path):
-        print(f"Creating a missing directory: {checkpoint_path}")
+        logging.info(f"Creating a missing directory: {checkpoint_path}")
         os.mkdir(checkpoint_path)
 
     torch.save(checkpoint, checkpoint_path)
