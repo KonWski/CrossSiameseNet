@@ -1,12 +1,16 @@
 import torch
 import logging
-from CrossSiameseNet.SiameseMolNet import  SiameseMolNet
-
+import os
 
 def save_checkpoint(checkpoint: dict, checkpoint_path: str):
     '''
     saves checkpoint on given checkpoint_path
     '''
+
+    if not os.path.isdir(checkpoint_path):
+        print(f"Creating a missing directory: {checkpoint_path}")
+        os.mkdir(checkpoint_path)
+
     torch.save(checkpoint, checkpoint_path)
 
     logging.info(8*"-")
