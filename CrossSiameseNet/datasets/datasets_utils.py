@@ -1,8 +1,8 @@
 from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from rdkit import Chem
-from rdkit.Chem import Crippen, Descriptors
+from rdkit.Chem import Crippen, Descriptors, QED, Lipinski
 import numpy as np
-from rdkit.Chem import Descriptors, rdMolDescriptors, AllChem, Crippen
+from rdkit.Chem import Descriptors, rdMolDescriptors, Crippen
 
 def load_dataset(dataset_name, featurizer, splitter):
     
@@ -18,15 +18,41 @@ def load_dataset(dataset_name, featurizer, splitter):
     elif dataset_name == "hiv_logp":
         datasets = load_hiv_logp(featurizer, splitter)
 
-    elif dataset_name[:7] == "hiv_pmi":
-        pmi_id = int(dataset_name[7])
-        datasets = load_hiv_pmi(featurizer, splitter, pmi_id)
-
-    elif dataset_name == "hiv_planarity":
-        datasets = load_hiv_planarity(featurizer, splitter)
-
     elif dataset_name == "hiv_molmr":
         datasets = load_hiv_molmr(featurizer, splitter)
+
+    elif dataset_name == "hiv_molwt":
+        datasets = load_hiv_extra_param(featurizer, splitter, "molwt")
+
+    elif dataset_name == "hiv_num_rotatable_bonds":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_rotatable_bonds")
+
+    elif dataset_name == "hiv_num_rings":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_rings")
+
+    elif dataset_name == "hiv_num_h_bond_acceptors":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_h_bond_acceptors")
+
+    elif dataset_name == "hiv_heavy_atom_count":
+        datasets = load_hiv_extra_param(featurizer, splitter, "heavy_atom_count")
+
+    elif dataset_name == "hiv_csp3":
+        datasets = load_hiv_extra_param(featurizer, splitter, "csp3")
+
+    elif dataset_name == "hiv_asa":
+        datasets = load_hiv_extra_param(featurizer, splitter, "asa")
+
+    elif dataset_name == "hiv_num_valence_electrons":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_valence_electrons")
+
+    elif dataset_name == "hiv_num_radical_electrons":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_radical_electrons")
+
+    elif dataset_name == "hiv_formal_charge":
+        datasets = load_hiv_extra_param(featurizer, splitter, "formal_charge")
+
+    elif dataset_name == "hiv_qed":
+        datasets = load_hiv_extra_param(featurizer, splitter, "qed")
 
     elif dataset_name == "delaney":
         _, datasets, _ = load_delaney(featurizer, splitter)
@@ -47,6 +73,55 @@ def load_dataset(dataset_name, featurizer, splitter):
     X_test, y_test, smiles_test = test_dataset.X, test_dataset.y, test_dataset.ids
 
     return X_train, y_train, smiles_train, X_val, y_val, smiles_val, X_test, y_test, smiles_test
+
+
+def load_hiv_extra_param(featurizer, splitter, param_name):
+
+    _, datasets, _ = load_hiv(featurizer, splitter)
+    train_dataset, val_dataset, test_dataset = datasets
+
+    X_train, smiles_train = train_dataset.X, train_dataset.ids
+    X_val, smiles_val = val_dataset.X, val_dataset.ids
+    X_test, smiles_test = test_dataset.X, test_dataset.ids
+
+    y_train = np.array([calculate_extra_param(smiles, param_name) for smiles in smiles_train])
+    y_val = np.array([calculate_extra_param(smiles, param_name) for smiles in smiles_val])
+    y_test = np.array([calculate_extra_param(smiles, param_name) for smiles in smiles_test])
+    
+    return DummyDataset(X_train, y_train, smiles_train), \
+        DummyDataset(X_val, y_val, smiles_val), \
+        DummyDataset(X_test, y_test, smiles_test)
+
+
+def calculate_extra_param(smiles, param_name):
+
+    mol = Chem.MolFromSmiles(smiles)
+    if param_name == "molwt":
+        param_value = Descriptors.MolWt(mol)
+    elif param_name == "num_rotatable_bonds":
+        param_value = Lipinski.NumRotatableBonds(mol)
+    elif param_name == "num_rings":
+        param_value = rdMolDescriptors.CalcNumRings(mol)
+    elif param_name == "num_h_bonds_acceptors":
+        param_value = Lipinski.NumHAcceptors(mol)
+    elif param_name == "heavy_atom_count":
+        param_value = rdMolDescriptors.CalcNumHeavyAtoms(mol)
+    elif param_name == "csp3":
+        param_value = rdMolDescriptors.CalcFractionCSP3(mol)
+    elif param_name == "asa":
+        param_value = rdMolDescriptors.CalcLabuteASA(mol)
+    elif param_name == "num_valence_electrons":
+        param_value = rdMolDescriptors.CalcNumValenceElectrons(mol)
+    elif param_name == "num_radical_electrons":
+        param_value = rdMolDescriptors.CalcNumRadicalElectrons(mol)
+    elif param_name == "formal_charge":
+        param_value = Chem.GetFormalCharge(mol)
+    elif param_name == "qed":
+        param_value = QED.qed(mol)
+    else:
+        raise Exception(f"Not implemented param: {param_name}")
+
+    return param_value
 
 
 def load_hiv_esol(featurizer, splitter):
@@ -134,75 +209,6 @@ def compute_logp(smiles: str):
     mol = Chem.MolFromSmiles(smiles)
     logp = Descriptors.MolLogP(mol)
     return logp
-
-
-def load_hiv_planarity(featurizer, splitter):
-    '''Molecule's planarity'''
-
-    _, datasets, _ = load_hiv(featurizer, splitter)
-    train_dataset, val_dataset, test_dataset = datasets
-
-    X_train, smiles_train = train_dataset.X, train_dataset.ids
-    X_val, smiles_val = val_dataset.X, val_dataset.ids
-    X_test, smiles_test = test_dataset.X, test_dataset.ids
-
-    y_train = np.array([compute_planarity(smiles) for smiles in smiles_train])
-    y_val = np.array([compute_planarity(smiles) for smiles in smiles_val])
-    y_test = np.array([compute_planarity(smiles) for smiles in smiles_test])
-    
-    return DummyDataset(X_train, y_train, smiles_train), \
-        DummyDataset(X_val, y_val, smiles_val), \
-        DummyDataset(X_test, y_test, smiles_test)
-
-
-def compute_planarity(smiles: str):
-
-    mol = Chem.MolFromSmiles(smiles)
-    mol = Chem.AddHs(mol)
-    params = AllChem.ETKDGv3()
-    params.randomSeed = 0xF00D
-    params.maxAttempts = 2000
-    AllChem.EmbedMolecule(mol, params)
-    pbf = rdMolDescriptors.CalcPBF(mol)
-    return pbf
-
-
-def load_hiv_pmi(featurizer, splitter, pmi_id):
-    '''Principal Moments of Inertia'''
-
-    _, datasets, _ = load_hiv(featurizer, splitter)
-    train_dataset, val_dataset, test_dataset = datasets
-
-    X_train, smiles_train = train_dataset.X, train_dataset.ids
-    X_val, smiles_val = val_dataset.X, val_dataset.ids
-    X_test, smiles_test = test_dataset.X, test_dataset.ids
-
-    y_train = np.array([compute_pmis(smiles, pmi_id) for smiles in smiles_train])
-    y_val = np.array([compute_pmis(smiles, pmi_id) for smiles in smiles_val])
-    y_test = np.array([compute_pmis(smiles, pmi_id) for smiles in smiles_test])
-    
-    return DummyDataset(X_train, y_train, smiles_train), \
-        DummyDataset(X_val, y_val, smiles_val), \
-        DummyDataset(X_test, y_test, smiles_test)
-
-
-def compute_pmis(smiles: str, pmi_id: int):
-
-    mol = Chem.MolFromSmiles(smiles)
-    mol = Chem.AddHs(mol)
-    params = AllChem.ETKDGv3()
-    params.randomSeed = 0xF00D
-    params.maxAttempts = 2000
-    AllChem.EmbedMolecule(mol, params)
-    
-    if pmi_id == 0:
-        pmi = rdMolDescriptors.CalcPMI1(mol)
-    elif pmi_id == 1:
-        pmi = rdMolDescriptors.CalcPMI2(mol)
-    elif pmi_id == 2:
-        pmi = rdMolDescriptors.CalcPMI3(mol)
-    
-    return pmi
 
 
 def load_hiv_molmr(featurizer, splitter):
