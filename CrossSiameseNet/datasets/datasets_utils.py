@@ -111,9 +111,9 @@ def calculate_extra_param(smiles, param_name):
     elif param_name == "asa":
         param_value = rdMolDescriptors.CalcLabuteASA(mol)
     elif param_name == "num_valence_electrons":
-        param_value = Descriptors.CalcNumValenceElectrons(mol)
+        param_value = Descriptors.NumValenceElectrons(mol)
     elif param_name == "num_radical_electrons":
-        param_value = Descriptors.CalcNumRadicalElectrons(mol)
+        param_value = Descriptors.NumRadicalElectrons(mol)
     elif param_name == "formal_charge":
         param_value = Chem.GetFormalCharge(mol)
     elif param_name == "qed":
