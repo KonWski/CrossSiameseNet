@@ -30,8 +30,8 @@ def load_dataset(dataset_name, featurizer, splitter):
     elif dataset_name == "hiv_num_rings":
         datasets = load_hiv_extra_param(featurizer, splitter, "num_rings")
 
-    elif dataset_name == "hiv_num_h_bond_acceptors":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_h_bond_acceptors")
+    elif dataset_name == "hiv_num_h_bonds_acceptors":
+        datasets = load_hiv_extra_param(featurizer, splitter, "num_h_bonds_acceptors")
 
     elif dataset_name == "hiv_heavy_atom_count":
         datasets = load_hiv_extra_param(featurizer, splitter, "heavy_atom_count")
