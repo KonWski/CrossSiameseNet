@@ -76,3 +76,19 @@ class SiameseMolNetRegression(SiameseMolNet):
         output = self.linear_output_3(output)
 
         return output
+
+
+class SiameseMolNetPretrained(nn.Module):
+
+    def __init__(self, cf_size: int, pretrained_model):
+
+        super().__init__()
+        self.cf_size = cf_size
+        self.pretrained_model = pretrained_model
+
+    def forward_once(self, x):
+        features = self.pretrained_model.forward_once(x)
+        return features
+
+    def forward(self, x):
+        return self.forward_once(x)
