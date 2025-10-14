@@ -3,7 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression
+from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression, SiameseMolNetPretrained
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
@@ -77,6 +77,8 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
 
     if model_name == "SMN_HIV":
         dummy_model = SiameseMolNet(cf_size)
+    elif model_name == "SMN_HIV_PRETRAINED":
+        dummy_model = SiameseMolNetPretrained(cf_size)
     else:
         # first submodel
         smn_hiv = SiameseMolNet(cf_size)
