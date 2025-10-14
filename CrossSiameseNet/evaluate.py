@@ -104,8 +104,9 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
 
 def send_model_to_device(model, device):
 
-    for submodel in model.models:
-        submodel.to(device)
+    if hasattr(model, "models"):
+        for submodel in model.models:
+            submodel.to(device)
 
     model.to(device)
 
