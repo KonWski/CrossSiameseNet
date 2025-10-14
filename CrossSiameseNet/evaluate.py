@@ -78,7 +78,7 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
     if model_name == "SMN_HIV":
         dummy_model = SiameseMolNet(cf_size)
     elif model_name == "SMN_HIV_PRETRAINED":
-        dummy_model = SiameseMolNetPretrained(cf_size)
+        dummy_model = SiameseMolNetPretrained(cf_size, SiameseMolNetRegression(cf_size))
     else:
         # first submodel
         smn_hiv = SiameseMolNet(cf_size)
