@@ -1,3 +1,4 @@
+from rdkit.Chem import AllChem
 from torch.utils.data import Dataset
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
@@ -6,10 +7,31 @@ import random
 import numpy as np
 import logging
 from CrossSiameseNet.datasets.datasets_utils import load_dataset
+from rdkit import Chem
+from rdkit.Chem.BRICS import BRICSDecompose
 
 class MolDataset(Dataset):
 
-    def __init__(self, X, y, smiles):
+    def __init__(
+            self, 
+            X, 
+            y, 
+            smiles,
+            augment_data: bool = False, 
+            fpgen: AllChem.GetMorganGenerator = None,
+
+            # augmentation parameters
+            mask_atoms: bool = False, 
+            max_n_mask_atoms: int = 0, 
+            prob_mask_atoms: float = 0.0,
+
+            add_gaussian_noise: bool = False,
+            prob_add_gaussian_noise: float = 0.0,
+            sigma_gaussian_noise: float = 0.0,
+
+            substructural_removal: bool = False,
+            prob_substructural_removal: float = 0.0
+        ):
         """
         Attributes
         ----------
@@ -24,6 +46,21 @@ class MolDataset(Dataset):
         self.smiles = smiles
         self.n_molecules = len(self.smiles)
 
+        # parameters needed for augmentation
+        self.augment_data = augment_data
+        self.fpgen = fpgen
+
+        self.mask_atom = mask_atoms
+        self.prob_mask_atom = prob_mask_atoms
+        self.max_n_mask_atom = max_n_mask_atoms
+
+        self.add_gaussian_noise = add_gaussian_noise
+        self.prob_add_gaussian_noise = prob_add_gaussian_noise
+        self.gaussian_noise_sigma = sigma_gaussian_noise
+
+        self.substructural_removal = substructural_removal
+        self.prob_substructural_removal = prob_substructural_removal
+
     def __len__(self):
         return len(self.y)
 
@@ -33,13 +70,92 @@ class MolDataset(Dataset):
         id1 = random.randint(0, self.__len__() - 1)
 
         # molecular fingerprints
-        mf0 = self.X[id0]
-        mf1 = self.X[id1]
+        mf0 = self.__augment_mol(id0)
+        mf1 = self.__augment_mol(id1)
 
         # difference between targets
         target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
         return mf0, mf1, target
+
+    def __augment_mol(self, id0):
+
+        mf = self.X[id0]
+
+        if self.augment_data:
+            mol = Chem.MolFromSmiles(self.smiles[id0])
+            rwmol = Chem.RWMol(mol)        
+
+            if self.mask_atom:
+                rwmol, mf = self.__mask_atom(rwmol, mf)
+            
+            if self.add_gaussian_noise:
+                rwmol, mf = self.__add_gaussian_noise(rwmol, mf)
+
+            if self.substructural_removal:
+                rwmol, mf = self.__substructural_removal(rwmol, mf)
+
+        else:
+            return mf
+            
+
+    def __mask_atom(self, rwmol, mf):
+
+        n_atoms = rwmol.GetNumAtoms()
+
+        # skip masking if the prob is lower or 
+        # the number of atoms to mask is the same as number of molecule's atoms
+        if np.random.uniform(0, 1) > self.prob_mask_atom or n_atoms == self.max_n_mask_atom:
+            return rwmol, mf
+
+        n_mask_atoms = random.randint(1, self.max_n_mask_atom) 
+        masked_atom_ids = random.sample(range(0, n_atoms), n_mask_atoms)
+
+        for atom_id in masked_atom_ids:
+            rwmol.GetAtomWithIdx(atom_id).SetAtomicNum(0)
+
+        Chem.SanitizeMol(rwmol)
+        mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
+
+        return rwmol, mf
+    
+    def __add_gaussian_noise(self, rwmol, mf):
+
+        if np.random.uniform(0, 1) <= self.prob_add_gaussian_noise:
+            mf = mf + np.random.normal(0, self.gaussian_noise_sigma, size=mf.shape[0])
+
+        return rwmol, mf
+
+    def __substructural_removal(self, rwmol, mf):
+
+        if np.random.uniform(0, 1) <= self.prob_substructural_removal:
+
+            substructures_smiles = list(BRICSDecompose(BRICSDecompose(rwmol)))
+            substructure_smile = random.choice(substructures_smiles)
+
+            mol = Chem.MolFromSmiles(substructure_smile)
+            rwmol = Chem.RWMol(mol)        
+            Chem.SanitizeMol(rwmol)
+            mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
+
+        return rwmol, mf
+
+    def __sanitize_dataset(self):
+
+        if self.mask_atom and (self.max_n_mask_atom != 0 or self.prob_mask_atom != 0.0):
+            print(f"Using masking atoms with {self.max_n_mask_atom} max_n_mask_atom and {self.prob_mask_atom} prob_mask_atom")
+        elif self.mask_atom and (self.max_n_mask_atom == 0 or self.prob_mask_atom == 0.0):
+            raise Exception("Masking atoms used with wrong parameters")
+
+        if self.add_gaussian_noise and (self.gaussian_noise_sigma != 0 or self.prob_add_gaussian_noise != 0.0):
+            print(f"Adding gaussian noise with {self.gaussian_noise_sigma} gaussian_noise_sigma and {self.prob_add_gaussian_noise} prob_add_gaussian_noise")
+        elif self.add_gaussian_noise and (self.gaussian_noise_sigma != 0 or self.prob_add_gaussian_noise != 0.0):
+            raise Exception("Adding gaussian noise used with wrong parameters")
+
+        if self.substructural_removal and self.prob_substructural_removal != 0.0:
+            print(f"Using substructural removal with {self.prob_substructural_removal} prob_substructural_removal")
+        elif self.substructural_removal and self.prob_substructural_removal == 0.0:
+            raise Exception("Substructural removal used with wrong parameters")
 
 
 class MolDatasetTriplet(MolDataset):
