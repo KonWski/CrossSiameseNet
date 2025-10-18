@@ -39,7 +39,8 @@ class MoleculeAugmentator:
     def transform(self, mf, smile):
 
         mol = Chem.MolFromSmiles(smile)
-        rwmol = Chem.RWMol(mol)  
+        rwmol = Chem.RWMol(mol)
+        mf_dtype = mf.dtype  
 
         if self.mask_atom:
             rwmol, mf = self.__mask_atom(rwmol, mf)
@@ -49,6 +50,8 @@ class MoleculeAugmentator:
 
         if self.substructural_removal:
             rwmol, mf = self.__substructural_removal(rwmol, mf)
+
+        mf = torch.tensor(mf, mf_dtype)
 
         return mf
 
