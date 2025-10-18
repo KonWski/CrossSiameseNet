@@ -103,7 +103,7 @@ class MoleculeAugmentator:
 
         if np.random.uniform(0, 1) <= self.prob_substructural_removal:
 
-            substructures_smiles = list(BRICSDecompose(BRICSDecompose(rwmol)))
+            substructures_smiles = list(BRICSDecompose(rwmol))
             substructure_smile = random.choice(substructures_smiles)
 
             mol = Chem.MolFromSmiles(substructure_smile)
