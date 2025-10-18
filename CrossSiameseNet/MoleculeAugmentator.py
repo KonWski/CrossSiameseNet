@@ -51,7 +51,8 @@ class MoleculeAugmentator:
         if self.substructural_removal:
             rwmol, mf = self.__substructural_removal(rwmol, mf)
 
-        mf = torch.tensor(mf, mf_dtype)
+        print(f"mf: {mf}")
+        mf = torch.tensor(mf, dtype=mf_dtype)
 
         return mf
 
