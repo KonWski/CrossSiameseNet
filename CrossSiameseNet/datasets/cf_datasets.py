@@ -45,7 +45,7 @@ class MolDataset(Dataset):
         # difference between targets
         target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
-        return mf0, smile0, mf1, smile1, target
+        return mf0, mf1, target, smile0, smile1
 
 
 class MolDatasetTriplet(MolDataset):
