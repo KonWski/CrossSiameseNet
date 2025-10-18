@@ -1,4 +1,3 @@
-from rdkit.Chem import AllChem
 from torch.utils.data import Dataset
 from deepchem.splits.splitters import Splitter
 from deepchem.feat import CircularFingerprint
@@ -7,7 +6,6 @@ import random
 import numpy as np
 import logging
 from CrossSiameseNet.datasets.datasets_utils import load_dataset
-from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 
 class MolDataset(Dataset):
 

@@ -64,10 +64,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     if molecule_augmentator and state == "train":
 
                         anchor_mf = molecule_augmentator.transform_batch(anchor_mf, anchor_smiles)
-                        anchor_mf = model.to(anchor_mf)
-
-                    print(f"type(anchor_mf): {type(anchor_mf)}")
-                    print(f"anchor_mf.shape: {anchor_mf.shape}")
+                        anchor_mf = anchor_mf.to(anchor_mf)
 
                     anchor_mf, positive_mf, negative_mf, anchor_label = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
