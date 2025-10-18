@@ -5,6 +5,7 @@ import logging
 from rdkit import Chem
 from rdkit.Chem.BRICS import BRICSDecompose
 import torch
+import copy
 
 class MoleculeAugmentator:
 
@@ -75,16 +76,22 @@ class MoleculeAugmentator:
         if np.random.uniform(0, 1) > self.prob_mask_atom or n_atoms == self.max_n_mask_atom:
             return rwmol, mf
 
+        rwmol_augmented = copy.deepcopy(rwmol)
+
         n_mask_atoms = random.randint(1, self.max_n_mask_atom) 
         masked_atom_ids = random.sample(range(0, n_atoms), n_mask_atoms)
 
         for atom_id in masked_atom_ids:
-            rwmol.GetAtomWithIdx(atom_id).SetAtomicNum(0)
+            rwmol_augmented.GetAtomWithIdx(atom_id).SetAtomicNum(0)
 
-        Chem.SanitizeMol(rwmol)
-        mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
+        try:
+            Chem.SanitizeMol(rwmol_augmented)
+        except Chem.KekulizeException:
+            return rwmol, mf
 
-        return rwmol, mf
+        mf = self.fpgen.GetFingerprintAsNumPy(rwmol_augmented)
+
+        return rwmol_augmented, mf
     
     def __add_gaussian_noise(self, rwmol, mf):
 
