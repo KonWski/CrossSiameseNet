@@ -85,7 +85,6 @@ class MoleculeAugmentator:
 
         try:
             Chem.SanitizeMol(rwmol_augmented)
-            print("WE MADE IT")
         except Chem.KekulizeException:
             return rwmol, mf
 
