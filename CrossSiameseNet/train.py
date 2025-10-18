@@ -9,10 +9,12 @@ from CrossSiameseNet.checkpoints import save_checkpoint
 from CrossSiameseNet.BatchShaper import BatchShaper
 from CrossSiameseNet.loss import WeightedTripletMarginLoss
 from CrossSiameseNet.Statistics import Statistics
+from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
-                  training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False):
+                  training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False,
+                  molecule_augmentator: MoleculeAugmentator = None):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-6)
@@ -58,6 +60,11 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 with torch.set_grad_enabled(state == 'train'):
                     
                     optimizer.zero_grad()
+
+                    if molecule_augmentator and state == "train":
+                        anchor_mf = molecule_augmentator.transform_batch(anchor_mf)
+                        anchor_mf = model.to(anchor_mf)
+
                     anchor_mf, positive_mf, negative_mf, anchor_label = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
                     loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
 
@@ -115,7 +122,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
-            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str):
+            test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str, 
+            molecule_augmentator: MoleculeAugmentator = None):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-5)    
@@ -141,7 +149,11 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
             for batch_id, (mfs0, mfs1, targets) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
-                    
+
+                    if molecule_augmentator and state == "train":
+                        mfs0 = molecule_augmentator(mfs0)
+                        mfs1 = molecule_augmentator(mfs1)
+
                     mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)
                     optimizer.zero_grad()
 

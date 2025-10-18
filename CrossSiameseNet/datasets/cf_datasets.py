@@ -7,31 +7,11 @@ import random
 import numpy as np
 import logging
 from CrossSiameseNet.datasets.datasets_utils import load_dataset
-from rdkit import Chem
-from rdkit.Chem.BRICS import BRICSDecompose
+from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 
 class MolDataset(Dataset):
 
-    def __init__(
-            self, 
-            X, 
-            y, 
-            smiles,
-            augment_data: bool = False, 
-            fpgen: AllChem.GetMorganGenerator = None,
-
-            # augmentation parameters
-            mask_atoms: bool = False, 
-            max_n_mask_atoms: int = 0, 
-            prob_mask_atoms: float = 0.0,
-
-            add_gaussian_noise: bool = False,
-            prob_add_gaussian_noise: float = 0.0,
-            sigma_gaussian_noise: float = 0.0,
-
-            substructural_removal: bool = False,
-            prob_substructural_removal: float = 0.0
-        ):
+    def __init__(self, X, y, smiles):
         """
         Attributes
         ----------
@@ -46,21 +26,6 @@ class MolDataset(Dataset):
         self.smiles = smiles
         self.n_molecules = len(self.smiles)
 
-        # parameters needed for augmentation
-        self.augment_data = augment_data
-        self.fpgen = fpgen
-
-        self.mask_atom = mask_atoms
-        self.prob_mask_atom = prob_mask_atoms
-        self.max_n_mask_atom = max_n_mask_atoms
-
-        self.add_gaussian_noise = add_gaussian_noise
-        self.prob_add_gaussian_noise = prob_add_gaussian_noise
-        self.gaussian_noise_sigma = sigma_gaussian_noise
-
-        self.substructural_removal = substructural_removal
-        self.prob_substructural_removal = prob_substructural_removal
-
     def __len__(self):
         return len(self.y)
 
@@ -70,92 +35,17 @@ class MolDataset(Dataset):
         id1 = random.randint(0, self.__len__() - 1)
 
         # molecular fingerprints
-        mf0 = self.__augment_mol(id0)
-        mf1 = self.__augment_mol(id1)
+        mf0 = self.X[id0]
+        mf1 = self.X[id1]
+
+        # smiles
+        smile0 = self.smiles[id0]
+        smile1 = self.smiles[id1]
 
         # difference between targets
         target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
-        return mf0, mf1, target
-
-    def __augment_mol(self, id0):
-
-        mf = self.X[id0]
-
-        if self.augment_data:
-            mol = Chem.MolFromSmiles(self.smiles[id0])
-            rwmol = Chem.RWMol(mol)        
-
-            if self.mask_atom:
-                rwmol, mf = self.__mask_atom(rwmol, mf)
-            
-            if self.add_gaussian_noise:
-                rwmol, mf = self.__add_gaussian_noise(rwmol, mf)
-
-            if self.substructural_removal:
-                rwmol, mf = self.__substructural_removal(rwmol, mf)
-
-        else:
-            return mf
-            
-
-    def __mask_atom(self, rwmol, mf):
-
-        n_atoms = rwmol.GetNumAtoms()
-
-        # skip masking if the prob is lower or 
-        # the number of atoms to mask is the same as number of molecule's atoms
-        if np.random.uniform(0, 1) > self.prob_mask_atom or n_atoms == self.max_n_mask_atom:
-            return rwmol, mf
-
-        n_mask_atoms = random.randint(1, self.max_n_mask_atom) 
-        masked_atom_ids = random.sample(range(0, n_atoms), n_mask_atoms)
-
-        for atom_id in masked_atom_ids:
-            rwmol.GetAtomWithIdx(atom_id).SetAtomicNum(0)
-
-        Chem.SanitizeMol(rwmol)
-        mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
-
-        return rwmol, mf
-    
-    def __add_gaussian_noise(self, rwmol, mf):
-
-        if np.random.uniform(0, 1) <= self.prob_add_gaussian_noise:
-            mf = mf + np.random.normal(0, self.gaussian_noise_sigma, size=mf.shape[0])
-
-        return rwmol, mf
-
-    def __substructural_removal(self, rwmol, mf):
-
-        if np.random.uniform(0, 1) <= self.prob_substructural_removal:
-
-            substructures_smiles = list(BRICSDecompose(BRICSDecompose(rwmol)))
-            substructure_smile = random.choice(substructures_smiles)
-
-            mol = Chem.MolFromSmiles(substructure_smile)
-            rwmol = Chem.RWMol(mol)        
-            Chem.SanitizeMol(rwmol)
-            mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
-
-        return rwmol, mf
-
-    def __sanitize_dataset(self):
-
-        if self.mask_atom and (self.max_n_mask_atom != 0 or self.prob_mask_atom != 0.0):
-            print(f"Using masking atoms with {self.max_n_mask_atom} max_n_mask_atom and {self.prob_mask_atom} prob_mask_atom")
-        elif self.mask_atom and (self.max_n_mask_atom == 0 or self.prob_mask_atom == 0.0):
-            raise Exception("Masking atoms used with wrong parameters")
-
-        if self.add_gaussian_noise and (self.gaussian_noise_sigma != 0 or self.prob_add_gaussian_noise != 0.0):
-            print(f"Adding gaussian noise with {self.gaussian_noise_sigma} gaussian_noise_sigma and {self.prob_add_gaussian_noise} prob_add_gaussian_noise")
-        elif self.add_gaussian_noise and (self.gaussian_noise_sigma != 0 or self.prob_add_gaussian_noise != 0.0):
-            raise Exception("Adding gaussian noise used with wrong parameters")
-
-        if self.substructural_removal and self.prob_substructural_removal != 0.0:
-            print(f"Using substructural removal with {self.prob_substructural_removal} prob_substructural_removal")
-        elif self.substructural_removal and self.prob_substructural_removal == 0.0:
-            raise Exception("Substructural removal used with wrong parameters")
+        return mf0, smile0, mf1, smile1, target
 
 
 class MolDatasetTriplet(MolDataset):
@@ -174,40 +64,15 @@ class MolDatasetTriplet(MolDataset):
         indices_0 = (self.y == 0).nonzero()[:,0].tolist()
         indices_1 = (self.y == 1).nonzero()[:,0].tolist()
 
-        if self.oversample and not self.use_fixed_triplets:
-
-            X_0 = self.X[indices_0]
-            X_1 = self.X[indices_1]
-            y_0 = self.y[indices_0]
-            y_1 = self.y[indices_1]
-            smiles_0 = self.smiles[indices_0]
-            smiles_1 = self.smiles[indices_1]
-
-            oversampled_X_1 = torch.cat([X_1 for i in range(self.oversample)])
-            oversampled_y_1 = torch.cat([y_1 for i in range(self.oversample)])
-            oversampled_smiles_1 = np.concatenate([smiles_1 for i in range(self.oversample)])
-
-            self.X = torch.cat([X_0, oversampled_X_1])
-            self.y = torch.cat([y_0, oversampled_y_1])
-            self.smiles = np.concatenate([smiles_0, oversampled_smiles_1])
-
-            self.indices_0 = (self.y == 0).nonzero()[:,0].tolist()
-            self.indices_1 = (self.y == 1).nonzero()[:,0].tolist()
-            
-        elif not self.oversample and not self.use_fixed_triplets:
-            
-            self.indices_0 = indices_0
-            self.indices_1 = indices_1
-
-        elif self.oversample and self.use_fixed_triplets:            
-            raise Exception(f"MolDatasetTriplet initiated with wrong parameters: oversample(value: {self.oversample}) and use_fixed_triplets(value: {self.use_fixed_triplets})")
-
         # set stable test triplets for repeatance
-        elif self.use_fixed_triplets:
-            
+        if self.use_fixed_triplets:
             self.indices_0 = indices_0
             self.indices_1 = indices_1
             self.fixed_triplets = self.__get_fixed_dataset()
+        
+        else:
+            self.indices_0 = indices_0
+            self.indices_1 = indices_1
 
 
     def __getitem__(self, id0):
@@ -216,11 +81,15 @@ class MolDatasetTriplet(MolDataset):
             
             anchor_mf = self.X[id0]
             anchor_label = self.y[id0].item()
+            anchor_smile = self.smiles[id0]
 
-            # dummy tensors
+            # dummy tensors nad lists - the batch forming role lies on BatchShaper
             if self.training_type in ["hard_batch_learning", "hard_batch_learning_only_positives", "semi_hard_negative_mining"]:
                 positive_mf = torch.tensor([0])
                 negative_mf = torch.tensor([0])
+
+                positive_smile = ""
+                negative_smile = ""
 
             else:
 
@@ -235,11 +104,15 @@ class MolDatasetTriplet(MolDataset):
                 positive_mf = self.X[positive_index]
                 negative_mf = self.X[negative_index]
 
-        else:            
-            anchor_mf, positive_mf, negative_mf, anchor_label = self.fixed_triplets[0][id0], self.fixed_triplets[1][id0], \
-                self.fixed_triplets[2][id0], self.fixed_triplets[3][id0]
+                positive_smile = self.smiles[positive_index]
+                negative_smile = self.smiles[negative_index]
 
-        return anchor_mf, positive_mf, negative_mf, anchor_label
+        else:            
+            anchor_mf, positive_mf, negative_mf, anchor_label, anchor_smile, positive_smile, negative_smile = self.fixed_triplets[0][id0], \
+                self.fixed_triplets[1][id0], self.fixed_triplets[2][id0], self.fixed_triplets[3][id0], self.fixed_triplets[4][id0], \
+                     self.fixed_triplets[5][id0], self.fixed_triplets[6][id0]
+
+        return anchor_mf, positive_mf, negative_mf, anchor_label, anchor_smile, positive_smile, negative_smile
 
 
     def __get_fixed_dataset(self):
@@ -264,8 +137,10 @@ class MolDatasetTriplet(MolDataset):
 
         positive_mf = self.X[positive_indices]
         negative_mf = self.X[negative_indices]
+        positive_smiles = [self.smiles[positive_index] for positive_index in positive_indices]
+        negative_smiles = [self.smiles[negative_index] for negative_index in negative_indices]
 
-        return [anchor_mf, positive_mf, negative_mf, self.y]
+        return [anchor_mf, positive_mf, negative_mf, self.y, self.smiles, positive_smiles, negative_smiles]
     
 
     def refresh_fixed_triplets(self, seed_fixed_triplets: int):
