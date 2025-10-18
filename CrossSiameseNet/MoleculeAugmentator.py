@@ -52,7 +52,6 @@ class MoleculeAugmentator:
         if self.substructural_removal:
             rwmol, mf = self.__substructural_removal(rwmol, mf)
 
-        print(f"mf: {mf}")
         mf = torch.tensor(mf, dtype=mf_dtype)
 
         return mf
@@ -86,6 +85,7 @@ class MoleculeAugmentator:
 
         try:
             Chem.SanitizeMol(rwmol_augmented)
+            print("WE MADE IT")
         except Chem.KekulizeException:
             return rwmol, mf
 

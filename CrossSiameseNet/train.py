@@ -62,7 +62,6 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                     optimizer.zero_grad()
 
                     if molecule_augmentator and state == "train":
-
                         anchor_mf = molecule_augmentator.transform_batch(anchor_mf, anchor_smiles)
                         anchor_mf = anchor_mf.to(anchor_mf)
 
