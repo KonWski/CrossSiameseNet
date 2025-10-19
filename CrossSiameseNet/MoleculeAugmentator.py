@@ -107,10 +107,12 @@ class MoleculeAugmentator:
             substructure_smile = random.choice(substructures_smiles)
 
             mol = Chem.MolFromSmiles(substructure_smile)
-            print(f"type(mol): {type(mol)}")
-            rwmol = Chem.RWMol(mol)        
-            Chem.SanitizeMol(rwmol)
-            mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
+
+            # check if decomposition did notfail (mol would be None)
+            if mol:
+                rwmol = Chem.RWMol(mol)
+                Chem.SanitizeMol(rwmol)
+                mf = self.fpgen.GetFingerprintAsNumPy(rwmol)
 
         return rwmol, mf
 
