@@ -61,7 +61,7 @@ def generate_embeddings(model, dataset, batch_size, device):
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     embeddings = []
 
-    for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
+    for batch_id, (anchor_mf, _, _, _, _, _, _) in enumerate(loader):
         anchor_mf = anchor_mf.to(device)
         embedding_chunk = model(anchor_mf)
 
