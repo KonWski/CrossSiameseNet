@@ -14,10 +14,10 @@ from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
                   training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False,
-                  molecule_augmentator: MoleculeAugmentator = None):
+                  molecule_augmentator: MoleculeAugmentator = None, lr: float = 1e-5):
     
     model = model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-5)
+    optimizer = Adam(model.parameters(), lr=lr)
     if weight_ones:
         weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
     else:
@@ -123,10 +123,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
             test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str, 
-            molecule_augmentator: MoleculeAugmentator = None):
+            molecule_augmentator: MoleculeAugmentator = None, lr: float = 1e-5):
     
     model = model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-5)    
+    optimizer = Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
 
     train_loss = []
