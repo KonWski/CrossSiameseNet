@@ -12,9 +12,9 @@ from CrossSiameseNet.Statistics import Statistics
 from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
-                  n_epochs: int, device, checkpoints_dir: str, lr: float, use_fixed_training_triplets: bool = False,
+                  n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
                   training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False,
-                  molecule_augmentator: MoleculeAugmentator = None):
+                  molecule_augmentator: MoleculeAugmentator = None, lr: float = None):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=lr)
@@ -123,7 +123,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
             test_loader: DataLoader, n_epochs: int, device, checkpoints_dir: str, 
-            lr: float, molecule_augmentator: MoleculeAugmentator = None):
+            molecule_augmentator: MoleculeAugmentator = None, lr: float = None):
     
     model = model.to(device)
     optimizer = Adam(model.parameters(), lr=lr)
