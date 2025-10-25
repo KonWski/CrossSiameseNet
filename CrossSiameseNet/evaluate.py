@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression, SiameseMolNetPretrained
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
+from skfp.metrics import enrichment_factor
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
 
@@ -37,8 +38,15 @@ def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
     recall_train = round(recall_score(y_train, y_pred), 4)
     f1_train = round(f1_score(y_train, y_pred), 4)
 
+    ef01_train = round(enrichment_factor(y_train, y_pred, fraction=0.01), 4)
+    ef05_train = round(enrichment_factor(y_train, y_pred, fraction=0.05), 4)
+    ef10_train = round(enrichment_factor(y_train, y_pred, fraction=0.1), 4)
+    ef15_train = round(enrichment_factor(y_train, y_pred, fraction=0.15), 4)
+    ef20_train = round(enrichment_factor(y_train, y_pred, fraction=0.2), 4)
+
     print(f"TRAIN")
     print(f"accuracy: {accuracy_train}, precision: {precision_train}, recall: {recall_train}, f1_score: {f1_train}")
+    print(f"ef01: {ef01_train}, ef05: {ef05_train}, ef10: {ef10_train}, ef15: {ef15_train}, ef20: {ef20_train}")
 
     # predictions
     y_pred = knn_test.predict(test_embeddings.cpu().detach().numpy())
@@ -49,11 +57,19 @@ def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
     recall_test = round(recall_score(y_test, y_pred), 4)
     f1_test = round(f1_score(y_test, y_pred), 4)
 
+    ef01_test = round(enrichment_factor(y_test, y_pred, fraction=0.01), 4)
+    ef05_test = round(enrichment_factor(y_test, y_pred, fraction=0.05), 4)
+    ef10_test = round(enrichment_factor(y_test, y_pred, fraction=0.1), 4)
+    ef15_test = round(enrichment_factor(y_test, y_pred, fraction=0.15), 4)
+    ef20_test = round(enrichment_factor(y_test, y_pred, fraction=0.2), 4)
+
     print(f"TEST")
     print(f"accuracy: {accuracy_test}, precision: {precision_test}, recall: {recall_test}, f1_score: {f1_test}")
+    print(f"ef01: {ef01_test}, ef05: {ef05_test}, ef10: {ef10_test}, ef15: {ef15_test}, ef20: {ef20_test}")
     print(8*"-")
 
-    return accuracy_train, precision_train, recall_train, f1_train, accuracy_test, precision_test, recall_test, f1_test
+    return accuracy_train, precision_train, recall_train, f1_train, ef01_train, ef05_train, ef10_train, ef15_train, ef20_train, \
+        ef01_test, ef05_test, ef10_test, ef15_test, ef20_test, accuracy_test, precision_test, recall_test, f1_test
 
 
 def generate_embeddings(model, dataset, batch_size, device):
