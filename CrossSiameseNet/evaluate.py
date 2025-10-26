@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression, SiameseMolNetPretrained
-from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
+from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet, CrossSiameseNetShorterVer0, CrossSiameseNetShorterVer1, CrossSiameseNetShorterVer2
 from skfp.metrics import enrichment_factor
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
@@ -89,7 +89,7 @@ def generate_embeddings(model, dataset, batch_size, device):
     return torch.cat(embeddings, dim=0)
 
 
-def load_dummy_model(model_name: str, cf_size: int = 2048):
+def load_dummy_model(model_name: str, csn_type: str = None, cf_size: int = 2048):
 
     if model_name == "SMN_HIV":
         dummy_model = SiameseMolNet(cf_size)
@@ -113,7 +113,16 @@ def load_dummy_model(model_name: str, cf_size: int = 2048):
         else:
             submodels = [smn_hiv]
 
-        dummy_model = CrossSiameseNet(submodels)
+        if not csn_type:
+            dummy_model = CrossSiameseNet(submodels)
+        elif csn_type == "shorterVer0":
+            dummy_model = CrossSiameseNetShorterVer0(submodels)
+        elif csn_type == "shorterVer1":
+            dummy_model = CrossSiameseNetShorterVer1(submodels)
+        elif csn_type == "shorterVer2":
+            dummy_model = CrossSiameseNetShorterVer2(submodels)
+        else:
+            raise Exception(f"{csn_type} no implemented")
 
     return dummy_model
 
