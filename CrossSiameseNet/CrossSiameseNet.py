@@ -139,7 +139,7 @@ class CrossSiameseNetAlternativeVer0(nn.Module):
         features_submodels = [model.forward_once(x) for model in self.models]
         features_submodels_cat = torch.tensor([], dtype=torch.long, device=x.device)
         for features_submodel in features_submodels:
-            features_submodels_cat = torch.cat((features_submodels_cat, features_submodel))
+            features_submodels_cat = torch.cat((features_submodels_cat, features_submodel.flatten()))
 
         x = self.conv_block1(features_submodels_cat)
         residual_features0 = x.clone()
