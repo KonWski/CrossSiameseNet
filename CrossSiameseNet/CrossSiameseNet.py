@@ -137,7 +137,7 @@ class CrossSiameseNetAlternativeVer0(nn.Module):
 
         # features collected across all models
         features_submodels = [model.forward_once(x) for model in self.models]
-        features_submodels_cat = torch.tensor([], dtype=torch.long)
+        features_submodels_cat = torch.tensor([], dtype=torch.long, device=x.device)
         for features_submodel in features_submodels:
             features_submodels_cat = torch.cat((features_submodels_cat, features_submodel))
 
