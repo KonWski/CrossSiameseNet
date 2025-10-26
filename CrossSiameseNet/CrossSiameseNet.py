@@ -241,3 +241,115 @@ class CrossSiameseNetShorterVer2(nn.Module):
 
     def forward(self, x):
         return self.forward_once(x)
+
+
+class CrossSiameseNetShorterVer3(nn.Module):
+    '''Siamese network using features from other siamese networks'''
+
+    def __init__(self, models: List[nn.Module]):
+
+        super().__init__()
+
+        self.models = models
+        self.n_models = len(models)
+        self.cf_size = models[0].cf_size
+
+        self.conv_block1 = ConvBlock(self.n_models, 16)
+        self.conv_block2 = ConvBlock(16, 16)
+        self.conv_block3 = ConvBlock(16, 16)
+        self.conv_block4 = ConvBlock(16, 16)
+        self.conv_block5 = ConvBlock(16, 1)
+
+        self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
+
+        # turn off grads in all parameters 
+        for model in self.models:
+            model.eval()
+            for param in model.parameters():
+                param.requires_grad = False
+
+        # initialize the weights
+        for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
+                           self.conv_block4, self.conv_block5]:
+            torch.nn.init.xavier_uniform_(conv_block.conv.weight)
+            conv_block.conv.bias.data.fill_(0.01)
+
+        torch.nn.init.xavier_uniform_(self.linear_block.linear.weight)
+        self.linear_block.linear.bias.data.fill_(0.01)
+
+    def forward_once(self, x):
+
+        # features collected across all models
+        features_submodels = [model.forward_once(x) for model in self.models]
+        features_submodels = torch.stack(features_submodels, dim=-2)
+
+        x = self.conv_block1(features_submodels)
+        residual_features0 = x.clone()
+        
+        x = self.conv_block2(x)
+        x = self.conv_block3(x, residual_features0)
+        residual_features1 = x.clone()
+        x = self.conv_block4(x)
+        x = self.conv_block5(x, residual_features1)
+        x = self.linear_block(x)
+
+        return x
+
+    def forward(self, x):
+        return self.forward_once(x)
+
+
+class CrossSiameseNetBiggerVer0(nn.Module):
+    '''Siamese network using features from other siamese networks'''
+
+    def __init__(self, models: List[nn.Module]):
+
+        super().__init__()
+
+        self.models = models
+        self.n_models = len(models)
+        self.cf_size = models[0].cf_size
+
+        self.conv_block1 = ConvBlock(self.n_models, 64)
+        self.conv_block2 = ConvBlock(64, 64)
+        self.conv_block3 = ConvBlock(64, 32)
+        self.conv_block4 = ConvBlock(32, 32)
+        self.conv_block5 = ConvBlock(32, 1)
+
+        self.linear_block = LinearBlock(2*self.cf_size, 2*self.cf_size)
+
+        # turn off grads in all parameters 
+        for model in self.models:
+            model.eval()
+            for param in model.parameters():
+                param.requires_grad = False
+
+        # initialize the weights
+        for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
+                           self.conv_block4, self.conv_block5]:
+            torch.nn.init.xavier_uniform_(conv_block.conv.weight)
+            conv_block.conv.bias.data.fill_(0.01)
+
+        torch.nn.init.xavier_uniform_(self.linear_block.linear.weight)
+        self.linear_block.linear.bias.data.fill_(0.01)
+
+    def forward_once(self, x):
+
+        # features collected across all models
+        features_submodels = [model.forward_once(x) for model in self.models]
+        features_submodels = torch.stack(features_submodels, dim=-2)
+
+        x = self.conv_block1(features_submodels)
+        residual_features0 = x.clone()
+        
+        x = self.conv_block2(x)
+        x = self.conv_block3(x, residual_features0)
+        residual_features1 = x.clone()
+        x = self.conv_block4(x)
+        x = self.conv_block5(x, residual_features1)
+        x = self.linear_block(x)
+
+        return x
+
+    def forward(self, x):
+        return self.forward_once(x)
