@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from CrossSiameseNet.SiameseMolNet import SiameseMolNet, SiameseMolNetRegression, SiameseMolNetPretrained
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet, CrossSiameseNetShorterVer0, CrossSiameseNetShorterVer1, \
-    CrossSiameseNetShorterVer2, CrossSiameseNetBiggerVer0, CrossSiameseNetShorterVer3
+    CrossSiameseNetShorterVer2, CrossSiameseNetBiggerVer0, CrossSiameseNetShorterVer3, CrossSiameseNetAlternativeVer0
 from skfp.metrics import enrichment_factor
 
 def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
@@ -126,6 +126,8 @@ def load_dummy_model(model_name: str, csn_type: str = None, cf_size: int = 2048)
             dummy_model = CrossSiameseNetShorterVer3(submodels)
         elif csn_type == "biggerVer0":
             dummy_model = CrossSiameseNetBiggerVer0(submodels)
+        elif csn_type == "alternativeVer0":
+            dummy_model = CrossSiameseNetAlternativeVer0(submodels)
         else:
             raise Exception(f"{csn_type} no implemented")
 
