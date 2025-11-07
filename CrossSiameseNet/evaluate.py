@@ -69,8 +69,8 @@ def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
     print(f"ef01: {ef01_test}, ef05: {ef05_test}, ef10: {ef10_test}, ef15: {ef15_test}, ef20: {ef20_test}")
     print(8*"-")
 
-    return accuracy_train, precision_train, recall_train, f1_train, ef01_train, ef05_train, ef10_train, ef15_train, ef20_train, \
-        ef01_test, ef05_test, ef10_test, ef15_test, ef20_test, accuracy_test, precision_test, recall_test, f1_test
+    return accuracy_train, precision_train, recall_train, f1_train, ef01_train, \
+        ef01_test, accuracy_test, precision_test, recall_test, f1_test
 
 
 def generate_embeddings(model, dataset, batch_size, device):
