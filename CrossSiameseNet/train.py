@@ -10,6 +10,7 @@ from CrossSiameseNet.BatchShaper import BatchShaper
 from CrossSiameseNet.loss import WeightedTripletMarginLoss
 from CrossSiameseNet.Statistics import Statistics
 from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
+from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
@@ -51,9 +52,17 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
             if state == "train":
                 model.train()
+
+                if isinstance(model, CrossSiameseNet):
+                    for m in model.models:
+                        m.train()
+
                 loader.dataset.shuffle_data(train_loader.batch_size)
             else:
                 model.eval()
+                if isinstance(model, CrossSiameseNet):
+                    for m in model.models:
+                        m.eval()
 
             for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label, anchor_smiles, _, _) in enumerate(loader):
 
