@@ -110,6 +110,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         checkpoint['used_fixed_training_triplets'] = use_fixed_training_triplets
         checkpoint["training_type"] = training_type
         checkpoint["weight_ones"] = str(weight_ones)
+        checkpoint["lr"] = lr
+        checkpoint["batch_size"] = train_loader.batch_size
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"

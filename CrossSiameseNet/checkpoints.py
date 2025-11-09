@@ -52,6 +52,8 @@ def load_checkpoint(model, checkpoint_path: str):
     logging.info(f"Used fixed training triplets: {checkpoint.get('used_fixed_training_triplets')}")
     logging.info(f"weight_ones: {checkpoint.get('weight_ones')}")
     logging.info(f"training_type: {checkpoint.get('training_type')}")
+    logging.info(f"lr: {checkpoint.get('lr')}")
+    logging.info(f"batch_size: {checkpoint.get('batch_size')}")
     logging.info(f"Save dttm: {checkpoint.get('save_dttm')}")
     logging.info(f"Train loss: {checkpoint.get('train_loss')}")    
     logging.info(f"Test loss: {checkpoint.get('test_loss')}")
