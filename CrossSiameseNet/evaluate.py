@@ -74,8 +74,8 @@ def evaluate(model, train_dataset, test_dataset, y_train, y_test, device):
     print(f"roc_auc: {roc_auc_test}, mcc_test: {mcc_test}")
     print(8*"-")
 
-    return accuracy_train, precision_train, recall_train, f1_train, ef01_train, roc_auc_train, roc_auc_train, \
-        accuracy_test, precision_test, recall_test, f1_test, ef01_test, roc_auc_test, roc_auc_test
+    return accuracy_train, precision_train, recall_train, f1_train, ef01_train, roc_auc_train, mcc_train, \
+        accuracy_test, precision_test, recall_test, f1_test, ef01_test, roc_auc_test, mcc_test
 
 
 def generate_embeddings(model, dataset, batch_size, device):
