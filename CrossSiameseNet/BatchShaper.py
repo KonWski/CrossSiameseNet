@@ -86,71 +86,44 @@ class BatchShaper:
 
                 positive_mfs_transformed = []
                 negative_mfs_transformed = []
-                n_anchors_switched_to_hard_batch_1 = 0
-                n_anchors_switched_to_hard_batch_0 = 0
 
                 for anchor_iter in range(len(anchors_transformed)):
 
                     anchor_label = anchor_labels[anchor_iter]
 
-                    if anchor_label == 0:
-
-                        distances_pos = distances[anchor_iter, indices_0]
-                        distances_neg = distances[anchor_iter, indices_1]
-
-                        id_distance_pos = random.randrange(len(distances_pos))
-                        distance_pos = distances_pos[id_distance_pos]
-                        positive_mfs_transformed.append(anchors_transformed_0[id_distance_pos, :])
-
-                        # negative distances fulfilling the alpha condition
-                        ids_neg_alpha_cond = ((distances_neg > distance_pos) & (distances_neg < self.alpha)).nonzero()[:,0].tolist()
-
-                        # found negative observations which fulfill the condition
-                        if len(ids_neg_alpha_cond) > 0:
-                            
-                            distances_neg_alpha_cond = distances_neg[ids_neg_alpha_cond]
-                            anchors_transformed_neg_alpha_cond = anchors_transformed_1[ids_neg_alpha_cond, :]
-                            id_distance_neg_min = distances_neg_alpha_cond.argmin().item()
-                            negative_mfs_transformed.append(anchors_transformed_neg_alpha_cond[id_distance_neg_min, :])
+                    if anchor_label == 1:
+                        pos_pool = [id for id in indices_1 if id != anchor_iter]
+                        anchors_transformed_pos = anchors_transformed_1
+                        neg_pool = indices_0
+                        anchors_transformed_neg = anchors_transformed_0
                         
-                        else:
-                                
-                            id_distance_neg_min = distances_neg.argmin().item()
-                            negative_mfs_transformed.append(anchors_transformed_1[id_distance_neg_min, :])
-                            n_anchors_switched_to_hard_batch_0 += 1
+                    else:
+                        pos_pool = [id for id in indices_0 if id != anchor_iter]
+                        anchors_transformed_pos = anchors_transformed_0
+                        neg_pool = indices_1
+                        anchors_transformed_neg = anchors_transformed_1
 
-                    elif anchor_label == 1:
+                    pos_idx = pos_pool[torch.randint(len(pos_pool), (1,)).item()]
 
-                        distances_pos = distances[anchor_iter, indices_1]
-                        distances_neg = distances[anchor_iter, indices_0]
+                    distances_pos = distances[anchor_iter, pos_idx]
+                    distances_neg = distances[anchor_iter, neg_pool]
 
-                        id_distance_pos = random.randrange(len(distances_pos))
-                        distance_pos = distances_pos[id_distance_pos]
-                        positive_mfs_transformed.append(anchors_transformed_1[id_distance_pos, :])
+                    semi_hard_mask = (distances_neg > distances_pos) & (distances_neg < distances_pos + self.margin)
+                    semi_hard_idx = semi_hard_mask.nonzero(as_tuple=True)[0].tolist()
 
-                        # negative distances fulfilling the alpha condition
-                        ids_neg_alpha_cond = ((distances_neg > distance_pos) & (distances_neg < self.alpha)).nonzero()[:,0].tolist()
+                    if semi_hard_mask.any():
+                        # pick first semi-hard (or random among them)
+                        valid_ids = [neg_pool[i] for i in semi_hard_idx]
+                        neg_idx = valid_ids[torch.randint(len(valid_ids), (1,)).item()]
+                    else:
+                        # fallback to closest negative
+                        neg_idx = neg_pool[distances_neg.argmin().item()]
 
-                        # found negative observations which fulfill the condition
-                        if len(ids_neg_alpha_cond) > 0:
-                            
-                            distances_neg_alpha_cond = distances_neg[ids_neg_alpha_cond]
-                            anchors_transformed_neg_alpha_cond = anchors_transformed_0[ids_neg_alpha_cond, :]
-                            id_distance_neg_min = distances_neg_alpha_cond.argmin().item()
-                            negative_mfs_transformed.append(anchors_transformed_neg_alpha_cond[id_distance_neg_min, :])
-                        
-                        else:
-
-                            id_distance_neg_min = distances_neg.argmin().item()
-                            negative_mfs_transformed.append(anchors_transformed_0[id_distance_neg_min, :])
-                            n_anchors_switched_to_hard_batch_1 += 1
+                    positive_mfs_transformed.append(anchors_transformed_pos[pos_idx, :])
+                    negative_mfs_transformed.append(anchors_transformed_neg[neg_idx, :])
 
                 positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
                 negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
-
-                n_anchors_semi_hard = len(anchors_transformed) - n_anchors_switched_to_hard_batch_1 - n_anchors_switched_to_hard_batch_0
-                if n_anchors_semi_hard > 0:
-                    logging.info(f"BatchShaper | n_anchors_semi_hard: {n_anchors_semi_hard}")
 
             else:
                 positive_mfs = positive_mfs.to(self.device)
