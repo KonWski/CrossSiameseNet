@@ -26,20 +26,12 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
-    statistics = Statistics(device, generate_stats)
-
-    train_loss = []
-    train_distances_0_0_mean = []
-    train_distances_1_1_mean = []
-    train_distances_0_1_mean = []
-    test_loss = []
-    test_distances_0_0_mean = []
-    test_distances_1_1_mean = []
-    test_distances_0_1_mean = []
+    statistics = Statistics(device, n_epochs)
 
     for epoch in range(0, n_epochs):
         
         checkpoint = {}
+        losses = {"train": None, "test": None}
 
         # set fixed training dataset for models comparison
         if epoch > 0 and use_fixed_training_triplets:
@@ -84,29 +76,18 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
-            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = statistics.distance_stats(model, loader)
+            losses[state] = epoch_loss
 
-            logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
-            logging.info(f"distances_0_0_mean: {distances_0_0_mean}, distances_1_1_mean: {distances_1_1_mean}, distances_0_1_mean: {distances_0_1_mean}")
-
-            # update report
-            if state == "train":
-                train_loss.append(epoch_loss)
-                train_distances_0_0_mean.append(distances_0_0_mean)
-                train_distances_1_1_mean.append(distances_1_1_mean)
-                train_distances_0_1_mean.append(distances_0_1_mean)
-            else:
-                test_loss.append(epoch_loss)
-                test_distances_0_0_mean.append(distances_0_0_mean)
-                test_distances_1_1_mean.append(distances_1_1_mean)
-                test_distances_0_1_mean.append(distances_0_1_mean)
+        statistics.refresh_embeddings(model, train_loader, test_loader)
+        statistics.update_statistics(epoch, losses["train"], losses["test"])
+        statistics.log_statistics(epoch)
 
         # save model to checkpoint
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
         checkpoint["dataset"] = dataset_name
-        checkpoint['train_loss'] = train_loss
-        checkpoint['test_loss'] = test_loss
+        checkpoint['train_loss'] = losses["train"]
+        checkpoint['test_loss'] = losses["test"]
         checkpoint['used_fixed_training_triplets'] = use_fixed_training_triplets
         checkpoint["training_type"] = training_type
         checkpoint["weight_ones"] = str(weight_ones)
@@ -118,18 +99,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
-    report_df = pd.DataFrame({
-        "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
-        "train_loss": train_loss, 
-        "test_loss": test_loss,
-        "train_distances_0_0_mean": train_distances_0_0_mean,
-        "train_distances_1_1_mean": train_distances_1_1_mean,
-        "train_distances_0_1_mean": train_distances_0_1_mean,
-        "test_distances_0_0_mean": test_distances_0_0_mean,
-        "test_distances_1_1_mean": test_distances_1_1_mean,
-        "test_distances_0_1_mean": test_distances_0_1_mean
-        })
-    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
+    statistics.save_statistics(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx")
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
