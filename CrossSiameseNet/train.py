@@ -27,10 +27,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
     statistics = Statistics(device, n_epochs)
+    best_f1_score = 0
 
     for epoch in range(0, n_epochs):
         
-        checkpoint = {}
         losses = {"train": None, "test": None}
 
         # set fixed training dataset for models comparison
@@ -83,20 +83,24 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         statistics.log_statistics(epoch)
 
         # save model to checkpoint
-        checkpoint["epoch"] = epoch
-        checkpoint["model_state_dict"] = model.state_dict()
-        checkpoint["dataset"] = dataset_name
-        checkpoint['train_loss'] = losses["train"]
-        checkpoint['test_loss'] = losses["test"]
-        checkpoint['used_fixed_training_triplets'] = use_fixed_training_triplets
-        checkpoint["training_type"] = training_type
-        checkpoint["weight_ones"] = str(weight_ones)
-        checkpoint["lr"] = lr
-        checkpoint["batch_size"] = train_loader.batch_size
-        checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        f1_score = statistics.get_metric_value("f1", "test", epoch)
+        if f1_score > best_f1_score:
 
-        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
-        save_checkpoint(checkpoint, checkpoint_path)
+            checkpoint = {
+                "epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "dataset": dataset_name,
+                "train_loss": losses["train"],
+                "test_loss": losses["test"],
+                "used_fixed_training_triplets": use_fixed_training_triplets,
+                "training_type": training_type,
+                "weight_ones": str(weight_ones),
+                "lr": lr,
+                "batch_size": train_loader.batch_size,
+                "save_dttm": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            checkpoint_path = f"{checkpoints_dir}/{dataset_name}"
+            save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
     statistics.save_statistics(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx")
