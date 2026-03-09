@@ -4,11 +4,13 @@ import torch.nn.functional as F
 
 class SiameseMolNet(nn.Module):
 
-    def __init__(self, cf_size: int):
+    def __init__(self, cf_size: int, dataset: str):
 
         super().__init__()
 
         self.cf_size = cf_size
+        self.dataset = dataset
+        self.model_name = f"SMN_{self.dataset}"
         self.linear_1 = nn.Linear(cf_size, 2*cf_size)
         self.batch_norm_1 = nn.BatchNorm1d(2*cf_size)
 

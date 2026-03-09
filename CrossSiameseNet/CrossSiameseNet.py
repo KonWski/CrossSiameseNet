@@ -46,9 +46,12 @@ class LinearBlock(nn.Module):
 class CrossSiameseNet(nn.Module):
     '''Siamese network using features from other siamese networks'''
 
-    def __init__(self, models: List[nn.Module]):
+    def __init__(self, dataset, models: List[nn.Module]):
 
         super().__init__()
+
+        self.dataset = dataset
+        self.model_name = self._get_model_name(dataset, models)
 
         self.models = models
         self.n_models = len(models)
@@ -76,6 +79,12 @@ class CrossSiameseNet(nn.Module):
 
         torch.nn.init.xavier_uniform_(self.linear_block.linear.weight)
         self.linear_block.linear.bias.data.fill_(0.01)
+
+
+    def _get_model_name(self, dataset, models):
+        model_name = f"CSN_{dataset}"
+        for model in models:
+            model_name = f"{model_name}_{model.model_name}"
 
     def forward_once(self, x):
 

@@ -9,8 +9,10 @@ import pandas as pd
 
 class Statistics:
 
-    def __init__(self, device, n_epochs):
+    def __init__(self, device, experiment_hash, model_name, n_epochs):
         self.device = device
+        self.experiment_hash = experiment_hash
+        self.model_name = model_name
         self.n_epochs = n_epochs
         self.accumulated_statistics = {
             "epoch_id": [{
@@ -172,4 +174,11 @@ class Statistics:
             rows.append(row)
 
         df = pd.DataFrame(rows)
+        df["experiment_hash"] = self.experiment_hash
+        df["model_name"] = self.model_name
+
         df.to_excel(path, index=False)
+
+    
+    def get_metric_value(self, metric_name, state, epoch_id):
+        return self.accumulated_statistics[epoch_id][state][metric_name]

@@ -11,13 +11,16 @@ from CrossSiameseNet.loss import WeightedTripletMarginLoss
 from CrossSiameseNet.Statistics import Statistics
 from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
+from uuid import uuid4
+
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
-                  training_type: str = None, alpha: float = None, weight_ones = True, generate_stats: bool = False,
+                  training_type: str = None, alpha: float = None, weight_ones = True, 
                   molecule_augmentator: MoleculeAugmentator = None, lr: float = None):
     
     model = model.to(device)
+    experiment_hash = uuid4().hex
     optimizer = Adam(model.parameters(), lr=lr)
     if weight_ones:
         weights_1 = len(train_loader.dataset.indices_0) / len(train_loader.dataset.indices_1)
@@ -26,7 +29,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
-    statistics = Statistics(device, n_epochs)
+    statistics = Statistics(device, experiment_hash, n_epochs)
     best_f1_score = 0
 
     for epoch in range(0, n_epochs):
@@ -87,6 +90,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         if f1_score > best_f1_score:
 
             checkpoint = {
+                "experiment_hash": experiment_hash,
                 "epoch": epoch,
                 "model_state_dict": model.state_dict(),
                 "dataset": dataset_name,
@@ -94,6 +98,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 "test_loss": losses["test"],
                 "used_fixed_training_triplets": use_fixed_training_triplets,
                 "training_type": training_type,
+                "alpha": alpha,
                 "weight_ones": str(weight_ones),
                 "lr": lr,
                 "batch_size": train_loader.batch_size,
@@ -103,7 +108,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
-    statistics.save_statistics(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx")
+    statistics.save_statistics(f"{checkpoints_dir}/train_report_{experiment_hash}.xlsx")
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
@@ -111,6 +116,7 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
             molecule_augmentator: MoleculeAugmentator = None, lr: float = None):
     
     model = model.to(device)
+    experiment_hash = uuid4().hex
     optimizer = Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
 
@@ -161,6 +167,7 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
                 test_loss.append(epoch_loss)
 
         # save model to checkpoint
+        checkpoint["experiment_hash"] = experiment_hash
         checkpoint["epoch"] = epoch
         checkpoint["model_state_dict"] = model.state_dict()
         checkpoint["dataset"] = dataset_name
@@ -176,4 +183,4 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
         "train_loss": train_loss, 
         "test_loss": test_loss})
-    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
+    report_df.to_excel(f"{checkpoints_dir}/train_report_{experiment_hash}.xlsx", index=False)
