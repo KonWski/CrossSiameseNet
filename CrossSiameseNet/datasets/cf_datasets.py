@@ -1,11 +1,10 @@
 from torch.utils.data import Dataset
-from deepchem.splits.splitters import Splitter
-from deepchem.feat import CircularFingerprint
 import torch
 import random
 import numpy as np
 import logging
 from CrossSiameseNet.datasets.datasets_utils import load_dataset
+from rdkit.Chem import AllChem
 
 class MolDataset(Dataset):
 
@@ -185,9 +184,10 @@ class MolDatasetTriplet(MolDataset):
         self.indices_1 = (self.y == 1).nonzero()[:,0].tolist()
 
 
-def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
+def get_dataset(dataset_name: str, splitter = None, cf_radius: int = 4, cf_size: int = 2048, 
                 triplet_loss = False, oversample: int = None, use_fixed_train_triplets: bool = False, 
-                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning"):
+                seed_fixed_train_triplets: int = None, training_type: str = "hard_batch_learning",
+                ogbg_dataset_path = None):
     '''Downloads DeepChem's dataset and wraprs them into a Torch dataset
     
     Available datasets:
@@ -201,9 +201,9 @@ def get_dataset(dataset_name: str, splitter: Splitter = None, cf_radius: int = 4
         logging.warning("Fixed triplets for regular dataset not implemented yet")
         return None
 
-    featurizer = CircularFingerprint(cf_radius, cf_size)
+    featurizer = AllChem.GetMorganGenerator(radius=cf_radius, fpsize=cf_size)
     X_train, y_train, smiles_train, X_val, y_val, smiles_val, \
-        X_test, y_test, smiles_test = load_dataset(dataset_name, featurizer, splitter)    
+        X_test, y_test, smiles_test = load_dataset(dataset_name, featurizer, splitter, ogbg_dataset_path)    
 
     # convert DeepChems datasets to Torch wrappers
     if triplet_loss:
