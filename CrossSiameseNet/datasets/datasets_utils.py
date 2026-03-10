@@ -3,11 +3,19 @@ from rdkit import Chem
 from rdkit.Chem import Crippen, Descriptors, QED, Lipinski
 import numpy as np
 from rdkit.Chem import Descriptors, rdMolDescriptors, Crippen
+import pandas as pd
+from ogb.graphproppred.dataset_pyg import PygGraphPropPredDataset
+import logging
+from rdkit.Chem import AllChem
+import torch
 
-def load_dataset(dataset_name, featurizer, splitter):
+def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = None):
     
     if dataset_name == "hiv":
         _, datasets, _ = load_hiv(featurizer, splitter)
+
+    if dataset_name == "ogbg-hiv":
+        datasets = load_ogbg_dataset(dataset_name, ogbg_dataset_path, featurizer)
 
     elif dataset_name == "hiv_esol":
         datasets = load_hiv_esol(featurizer, splitter)
@@ -91,6 +99,59 @@ def load_hiv_extra_param(featurizer, splitter, param_name):
     return DummyDataset(X_train, y_train, smiles_train), \
         DummyDataset(X_val, y_val, smiles_val), \
         DummyDataset(X_test, y_test, smiles_test)
+
+
+def load_ogbg_dataset(dataset, dataset_path, featurizer):
+
+    ogbg_dataset = PygGraphPropPredDataset(name = dataset, root = dataset_path)
+
+    train_ids = ogbg_dataset.get_idx_split()["train"]
+    train_dataset = ogbg_dataset[train_ids]
+    smiles_train = get_smiles(train_dataset.root, train_ids)
+    X_train, y_train, smiles_train = load_ecfp_fingerprints(smiles_train, train_dataset.y, featurizer)
+
+    valid_ids = ogbg_dataset.get_idx_split()["valid"]
+    valid_dataset = ogbg_dataset[valid_ids]
+    smiles_valid = get_smiles(valid_dataset.root, valid_ids)
+    X_valid, y_valid, smiles_valid = load_ecfp_fingerprints(smiles_valid, valid_dataset.y, featurizer)
+
+    test_ids = ogbg_dataset.get_idx_split()["test"]
+    test_dataset = ogbg_dataset[test_ids]
+    smiles_test = get_smiles(test_dataset.root, test_ids)
+    X_test, y_test, smiles_test = load_ecfp_fingerprints(smiles_test, test_dataset.y, featurizer)
+
+    return DummyDataset(X_train, y_train, smiles_train), \
+        DummyDataset(X_valid, y_valid, smiles_valid), \
+        DummyDataset(X_test, y_test, smiles_test)
+
+
+def get_smiles(mapping_path, molecule_ids):
+    df = pd.read_csv(f"{mapping_path}/mapping/mol.csv.gz")
+    return df.loc[molecule_ids]["smiles"].to_list()
+
+
+def load_ecfp_fingerprints(smiles, y, featurizer):
+
+    X = []
+    updated_y = []
+    updated_smiles = []
+
+    for smile, label in zip(smiles, y):
+        
+        mol = Chem.MolFromSmiles(smile)
+
+        if mol is not None:
+            mol = Chem.AddHs(mol)
+            fingerprint = featurizer.GetFingerprintAsNumPy(mol)
+
+            X.append(fingerprint)
+            updated_y.append(label)
+            updated_smiles.append(smile)
+
+        else:
+            logging.info(f"Rdkit was not able to convert Smile {smile} to a mol. Hash used as a scaffold.")
+
+    return X, updated_y, updated_smiles
 
 
 def calculate_extra_param(smiles, param_name):
