@@ -1,4 +1,3 @@
-from deepchem.molnet import load_hiv, load_delaney, load_lipo, load_tox21
 from rdkit import Chem
 from rdkit.Chem import Crippen, Descriptors, QED, Lipinski
 import numpy as np
@@ -6,12 +5,11 @@ from rdkit.Chem import Descriptors, rdMolDescriptors, Crippen
 import pandas as pd
 from ogb.graphproppred.dataset_pyg import PygGraphPropPredDataset
 import logging
-from rdkit.Chem import AllChem
-import torch
 
 def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = None):
     
     if dataset_name == "hiv":
+        from deepchem.molnet import load_hiv
         _, datasets, _ = load_hiv(featurizer, splitter)
 
     if dataset_name == "ogbg-hiv":
@@ -63,12 +61,15 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
         datasets = load_hiv_extra_param(featurizer, splitter, "qed")
 
     elif dataset_name == "delaney":
+        from deepchem.molnet import load_delaney
         _, datasets, _ = load_delaney(featurizer, splitter)
     
     elif dataset_name == "lipo":
+        from deepchem.molnet import load_lipo
         _, datasets, _ = load_lipo(featurizer, splitter)
     
     elif dataset_name[:5] == "tox21":
+        from deepchem.molnet import load_tox21
         task = dataset_name[dataset_name.find("_")+1:]
         _, datasets, _ = load_tox21(featurizer, splitter, tasks=[task])
     
