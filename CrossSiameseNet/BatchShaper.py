@@ -91,15 +91,11 @@ class BatchShaper:
 
                     if anchor_label == 1:
                         pos_pool = [id for id in indices_1 if id != anchor_iter]
-                        anchors_transformed_pos = anchors_transformed_1
                         neg_pool = indices_0
-                        anchors_transformed_neg = anchors_transformed_0
                         
                     else:
                         pos_pool = [id for id in indices_0 if id != anchor_iter]
-                        anchors_transformed_pos = anchors_transformed_0
                         neg_pool = indices_1
-                        anchors_transformed_neg = anchors_transformed_1
 
                     pos_idx = pos_pool[torch.randint(len(pos_pool), (1,)).item()]
 
@@ -117,8 +113,8 @@ class BatchShaper:
                         # fallback to closest negative
                         neg_idx = neg_pool[distances_neg.argmin().item()]
 
-                    positive_mfs_transformed.append(anchors_transformed_pos[pos_idx, :])
-                    negative_mfs_transformed.append(anchors_transformed_neg[neg_idx, :])
+                    positive_mfs_transformed.append(anchors_transformed[pos_idx, :])
+                    negative_mfs_transformed.append(anchors_transformed[neg_idx, :])
 
                 positive_mfs_transformed = torch.stack(positive_mfs_transformed, dim=0)
                 negative_mfs_transformed = torch.stack(negative_mfs_transformed, dim=0)
