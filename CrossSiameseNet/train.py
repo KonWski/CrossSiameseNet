@@ -53,36 +53,37 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                         m.train()
 
                 loader.dataset.shuffle_data(train_loader.batch_size)
+
+                for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label, anchor_smiles, _, _) in enumerate(loader):
+
+                    with torch.set_grad_enabled(state == 'train'):
+                        
+                        optimizer.zero_grad()
+
+                        if molecule_augmentator and state == "train":
+                            anchor_mf = molecule_augmentator.transform_batch(anchor_mf, anchor_smiles)
+                            anchor_mf = anchor_mf.to(anchor_mf)
+
+                        anchor_mf, positive_mf, negative_mf, anchor_label = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
+                        loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
+
+                        if state == "train":
+                            loss.backward()
+                            optimizer.step()
+
+                    running_loss += loss.item()
+
+                epoch_loss = round(running_loss / (batch_id + 1), 5)
+                losses[state] = epoch_loss
+
             else:
                 model.eval()
                 if isinstance(model, CrossSiameseNet):
                     for m in model.models:
                         m.eval()
 
-            for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label, anchor_smiles, _, _) in enumerate(loader):
-
-                with torch.set_grad_enabled(state == 'train'):
-                    
-                    optimizer.zero_grad()
-
-                    if molecule_augmentator and state == "train":
-                        anchor_mf = molecule_augmentator.transform_batch(anchor_mf, anchor_smiles)
-                        anchor_mf = anchor_mf.to(anchor_mf)
-
-                    anchor_mf, positive_mf, negative_mf, anchor_label = batch_shaper.shape_batch(anchor_mf, positive_mf, negative_mf, anchor_label, model, state)
-                    loss = criterion_triplet_loss(anchor_mf, positive_mf, negative_mf, anchor_label)
-
-                    if state == "train":
-                        loss.backward()
-                        optimizer.step()
-
-                running_loss += loss.item()
-
-            epoch_loss = round(running_loss / (batch_id + 1), 5)
-            losses[state] = epoch_loss
-
         statistics.refresh_embeddings(model, train_loader, test_loader)
-        statistics.update_statistics(epoch, losses["train"], losses["test"])
+        statistics.update_statistics(epoch, losses["train"])
         statistics.log_statistics(epoch)
 
         # save model to checkpoint
@@ -95,7 +96,6 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 "model_state_dict": model.state_dict(),
                 "dataset": dataset_name,
                 "train_loss": losses["train"],
-                "test_loss": losses["test"],
                 "used_fixed_training_triplets": use_fixed_training_triplets,
                 "training_type": training_type,
                 "alpha": alpha,
