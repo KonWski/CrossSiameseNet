@@ -49,16 +49,16 @@ class Statistics:
 
     def refresh_embeddings(self, model, train_loader, test_loader):
 
-        train_anchors_transformed, train_anchor_labels = self._generate_embeddings(model, train_loader.dataset, 1000)
+        train_anchors_transformed, train_anchor_labels = self._generate_embeddings("train", model, train_loader.dataset, 1000)
         self.train_embeddings = train_anchors_transformed
         self.train_labels = train_anchor_labels
 
-        test_anchors_transformed, test_anchor_labels = self._generate_embeddings(model, test_loader.dataset, 1000)
+        test_anchors_transformed, test_anchor_labels = self._generate_embeddings("test", model, test_loader.dataset, 1000)
         self.test_embeddings = test_anchors_transformed
         self.test_labels = test_anchor_labels
 
 
-    def _generate_embeddings(self, model, dataset, batch_size):
+    def _generate_embeddings(self, state, model, dataset, batch_size):
 
         model.eval()
         if isinstance(model, CrossSiameseNet):
@@ -68,10 +68,18 @@ class Statistics:
         loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
         embeddings = []
         anchor_labels = []
-        for _, (anchor_mf, _, _, anchor_label) in enumerate(loader):
-            anchor_mf = anchor_mf.to(self.device)
-            embeddings.append(model(anchor_mf).cpu())
-            anchor_labels.append(anchor_label.cpu())
+
+        if state == "train":
+            for batch_id, (anchor_mf, _, _, anchor_label, _, _, _) in enumerate(loader):
+                anchor_mf = anchor_mf.to(self.device)
+                embeddings.append(model(anchor_mf).cpu())
+                anchor_labels.append(anchor_label.cpu())
+        else:
+            for _, (anchor_mf, _, _, anchor_label) in enumerate(loader):
+                anchor_mf = anchor_mf.to(self.device)
+                embeddings.append(model(anchor_mf).cpu())
+                anchor_labels.append(anchor_label.cpu())
+
         return torch.cat(embeddings, dim=0), torch.cat(anchor_labels, dim=0)
     
 
