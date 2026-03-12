@@ -75,7 +75,7 @@ class Statistics:
         return torch.cat(embeddings, dim=0), torch.cat(anchor_labels, dim=0)
     
 
-    def update_statistics(self, epoch_id, train_loss, test_loss):
+    def update_statistics(self, epoch_id, train_loss):
 
         for state in ["train", "test"]:
             distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = self._distance_stats(self, "train")
@@ -95,7 +95,7 @@ class Statistics:
 
         # manual stats update
         self.accumulated_statistics[epoch_id]["train"]["loss"] = train_loss
-        self.accumulated_statistics[epoch_id]["test"]["loss"] = test_loss
+        self.accumulated_statistics[epoch_id]["test"]["loss"] = None
 
 
     def _distance_stats(self, state):

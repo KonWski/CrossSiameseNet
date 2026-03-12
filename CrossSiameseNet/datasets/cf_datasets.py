@@ -216,8 +216,8 @@ def get_dataset(dataset_name: str, splitter = None, cf_radius: int = 4, cf_size:
     if triplet_loss:
         train_dataset = MolDatasetTriplet(X_train, y_train, smiles_train, True, oversample, use_fixed_train_triplets, 
                                             seed_fixed_train_triplets, training_type)
-        test_dataset = MolDatasetTriplet(X_test, y_test, smiles_test, False, False, True, 123)
-        valid_dataset = MolDatasetTriplet(X_val, y_val, smiles_val, False, False, True, 123)
+        test_dataset = MolDataset(X_test, y_test, smiles_test)
+        valid_dataset = MolDataset(X_val, y_val, smiles_val)
     
     else:
         train_dataset, valid_dataset, test_dataset = \
