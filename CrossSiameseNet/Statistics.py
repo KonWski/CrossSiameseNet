@@ -81,23 +81,23 @@ class Statistics:
 
         for state in ["train", "test"]:
             distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = self._distance_stats("train")
-            self.accumulated_statistics[epoch_id][state]["distances_0_0_mean"] = distances_0_0_mean
-            self.accumulated_statistics[epoch_id][state]["distances_1_1_mean"] = distances_1_1_mean
-            self.accumulated_statistics[epoch_id][state]["distances_0_1_mean"] = distances_0_1_mean
+            self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_0_0_mean"] = distances_0_0_mean
+            self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_1_1_mean"] = distances_1_1_mean
+            self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_0_1_mean"] = distances_0_1_mean
 
         accuracy, precision, recall, f1, ef01, ef05, roc_auc, mcc = self._evaluate_model(n_neighbors=10)
-        self.accumulated_statistics[epoch_id]["test"]["accuracy"] = accuracy
-        self.accumulated_statistics[epoch_id]["test"]["precision"] = precision
-        self.accumulated_statistics[epoch_id]["test"]["recall"] = recall
-        self.accumulated_statistics[epoch_id]["test"]["f1"] = f1
-        self.accumulated_statistics[epoch_id]["test"]["ef01"] = ef01
-        self.accumulated_statistics[epoch_id]["test"]["ef05"] = ef05
-        self.accumulated_statistics[epoch_id]["test"]["roc_auc"] = roc_auc
-        self.accumulated_statistics[epoch_id]["test"]["mcc"] = mcc
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["accuracy"] = accuracy
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["precision"] = precision
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["recall"] = recall
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["f1"] = f1
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["ef01"] = ef01
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["ef05"] = ef05
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["roc_auc"] = roc_auc
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["mcc"] = mcc
 
         # manual stats update
-        self.accumulated_statistics[epoch_id]["train"]["loss"] = train_loss
-        self.accumulated_statistics[epoch_id]["test"]["loss"] = None
+        self.accumulated_statistics["epoch_id"][epoch_id]["train"]["loss"] = train_loss
+        self.accumulated_statistics["epoch_id"][epoch_id]["test"]["loss"] = None
 
 
     def _distance_stats(self, state):
