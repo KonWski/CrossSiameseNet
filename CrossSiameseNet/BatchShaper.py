@@ -1,7 +1,5 @@
 import torch
 import random
-import logging
-import numpy as np
 
 class BatchShaper:
 
@@ -108,7 +106,7 @@ class BatchShaper:
                     distances_pos = distances[anchor_iter, pos_idx]
                     distances_neg = distances[anchor_iter, neg_pool]
 
-                    semi_hard_mask = (distances_neg > distances_pos) & (distances_neg < distances_pos + self.margin)
+                    semi_hard_mask = (distances_neg > distances_pos) & (distances_neg < distances_pos + self.alpha)
                     semi_hard_idx = semi_hard_mask.nonzero(as_tuple=True)[0].tolist()
 
                     if semi_hard_mask.any():
