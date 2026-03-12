@@ -201,7 +201,7 @@ def get_dataset(dataset_name: str, splitter = None, cf_radius: int = 4, cf_size:
         logging.warning("Fixed triplets for regular dataset not implemented yet")
         return None
 
-    featurizer = AllChem.GetMorganGenerator(radius=cf_radius, fpsize=cf_size)
+    featurizer = AllChem.GetMorganGenerator(radius=cf_radius, fpSize=cf_size)
     X_train, y_train, smiles_train, X_val, y_val, smiles_val, \
         X_test, y_test, smiles_test = load_dataset(dataset_name, featurizer, splitter, ogbg_dataset_path)    
 
