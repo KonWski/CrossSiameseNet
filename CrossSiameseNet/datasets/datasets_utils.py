@@ -5,6 +5,7 @@ from rdkit.Chem import Descriptors, rdMolDescriptors, Crippen
 import pandas as pd
 from ogb.graphproppred.dataset_pyg import PygGraphPropPredDataset
 import logging
+from torch import tensor
 
 def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = None):
     
@@ -152,7 +153,7 @@ def load_ecfp_fingerprints(smiles, y, featurizer):
         else:
             logging.info(f"Rdkit was not able to convert Smile {smile} to a mol. Hash used as a scaffold.")
 
-    return X, updated_y, updated_smiles
+    return tensor(X), tensor(updated_y), updated_smiles
 
 
 def calculate_extra_param(smiles, param_name):
