@@ -3,7 +3,7 @@ import random
 
 class BatchShaper:
 
-    def __init__(self, device, training_type: str, alpha: float = None):
+    def __init__(self, device, training_type: str, alpha: float = 1.0):
         self.device = device
         self.training_type = training_type
         self.alpha = alpha
