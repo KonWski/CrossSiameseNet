@@ -29,7 +29,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
-    statistics = Statistics(device, experiment_hash, n_epochs)
+    statistics = Statistics(device, experiment_hash, model.model_name, n_epochs)
     best_f1_score = 0
 
     for epoch in range(0, n_epochs):
