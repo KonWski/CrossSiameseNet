@@ -121,6 +121,9 @@ class MolDatasetTriplet(MolDataset):
         positive_indices = []
         negative_indices = []
 
+        print(f"type(y): {type(self.y)}")
+        print(f"y: {self.y}")
+
         for label_packed in self.y.tolist():
             anchor_label = label_packed[0]
 
