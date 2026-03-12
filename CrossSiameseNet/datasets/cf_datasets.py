@@ -19,9 +19,9 @@ class MolDataset(Dataset):
             - ids -> smiles
         """
         self.X = torch.tensor(X, dtype=torch.float32)
-        self.y = torch.tensor(y, dtype=torch.float32)
+        self.y = self.reshape_y(y)
         self.smiles = smiles
-        self.n_molecules = len(self.smiles)
+        self.n_molecules = len(self.smiles)        
 
     def __len__(self):
         return len(self.y)
@@ -43,6 +43,14 @@ class MolDataset(Dataset):
         target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
 
         return mf0, mf1, target, smile0, smile1
+
+    def reshape_y(self, y):
+        
+        y = torch.tensor(y, dtype=torch.float32)
+        if y.shape == torch.Size([len(y)]):
+            y = y.unsqueeze(1)
+            
+        return y
 
 
 class MolDatasetTriplet(MolDataset):
