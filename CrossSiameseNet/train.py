@@ -12,6 +12,7 @@ from CrossSiameseNet.Statistics import Statistics
 from CrossSiameseNet.MoleculeAugmentator import MoleculeAugmentator
 from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
 from uuid import uuid4
+import sys
 
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
@@ -122,6 +123,7 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
 
     train_loss = []
     test_loss = []
+    best_loss = sys.float_info.max
 
     for epoch in range(0, n_epochs):
         
@@ -166,17 +168,21 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
             else:
                 test_loss.append(epoch_loss)
 
-        # save model to checkpoint
-        checkpoint["experiment_hash"] = experiment_hash
-        checkpoint["epoch"] = epoch
-        checkpoint["model_state_dict"] = model.state_dict()
-        checkpoint["dataset"] = dataset_name
-        checkpoint['train_loss'] = train_loss
-        checkpoint['test_loss'] = test_loss
-        checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if epoch_loss < best_loss:
 
-        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
-        save_checkpoint(checkpoint, checkpoint_path)
+            best_loss = epoch_loss
+
+            # save model to checkpoint
+            checkpoint["experiment_hash"] = experiment_hash
+            checkpoint["epoch"] = epoch
+            checkpoint["model_state_dict"] = model.state_dict()
+            checkpoint["dataset"] = dataset_name
+            checkpoint['train_loss'] = train_loss
+            checkpoint['test_loss'] = test_loss
+            checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            checkpoint_path = f"{checkpoints_dir}/{dataset_name}"
+            save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
     report_df = pd.DataFrame({
