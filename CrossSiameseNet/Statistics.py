@@ -166,7 +166,7 @@ class Statistics:
 
         for epoch_id in range(self.n_epochs):
             
-            epoch_stats = self.accumulated_statistics[epoch_id]
+            epoch_stats = self.accumulated_statistics["epoch_id"][epoch_id]
             row = {"epoch": epoch_id}
 
             for state in ["train", "test"]:
