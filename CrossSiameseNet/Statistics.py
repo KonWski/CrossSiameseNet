@@ -183,4 +183,4 @@ class Statistics:
 
     
     def get_metric_value(self, metric_name, state, epoch_id):
-        return self.accumulated_statistics[epoch_id][state][metric_name]
+        return self.accumulated_statistics["epoch_id"][epoch_id][state][metric_name]
