@@ -156,7 +156,7 @@ class Statistics:
 
     def log_statistics(self, epoch_id):
         
-        epoch_statistics = self.accumulated_statistics[epoch_id]
+        epoch_statistics = self.accumulated_statistics["epoch_id"][epoch_id]
         logging.info(f"Epoch_id: {epoch_id}, State: train, Stats: {epoch_statistics['train']}")
         logging.info(f"Epoch_id: {epoch_id}, State: test, Stats: {epoch_statistics['test']}")
 
