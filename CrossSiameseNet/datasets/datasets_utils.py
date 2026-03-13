@@ -87,7 +87,7 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
 
 def load_hiv_extra_param(featurizer, splitter, param_name):
 
-    _, datasets, _ = load_hiv(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
@@ -188,7 +188,7 @@ def calculate_extra_param(smiles, param_name):
 
 
 def load_hiv_esol(featurizer, splitter):
-    _, datasets, _ = load_hiv(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
@@ -225,7 +225,7 @@ def esol_predict(smiles: str):
 def load_hiv_tpsa(featurizer, splitter):
     '''topological polar surface'''
 
-    _, datasets, _ = load_hiv(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
@@ -251,7 +251,7 @@ def compute_tpsa(smiles: str):
 def load_hiv_logp(featurizer, splitter):
     '''Octanol-water partition coefficient (lipophilicity)'''
 
-    _, datasets, _ = load_hiv(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
@@ -277,7 +277,7 @@ def compute_logp(smiles: str):
 def load_hiv_molmr(featurizer, splitter):
     '''Crippen’s Molar Refractivity (MR)'''
 
-    _, datasets, _ = load_hiv(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
