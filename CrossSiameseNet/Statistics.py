@@ -49,16 +49,16 @@ class Statistics:
 
     def refresh_embeddings(self, model, train_loader, test_loader):
 
-        train_anchors_transformed, train_anchor_labels = self._generate_embeddings("train", model, train_loader.dataset, 1000)
-        self.train_embeddings = train_anchors_transformed
-        self.train_labels = train_anchor_labels
+        train_anchors_transformed, train_anchor_labels = self._generate_embeddings(model, train_loader.dataset, 1000)
+        self.train_embeddings = train_anchors_transformed.detach().numpy()
+        self.train_labels = train_anchor_labels.detach().numpy()
 
-        test_anchors_transformed, test_anchor_labels = self._generate_embeddings("test", model, test_loader.dataset, 1000)
-        self.test_embeddings = test_anchors_transformed
-        self.test_labels = test_anchor_labels
+        test_anchors_transformed, test_anchor_labels = self._generate_embeddings(model, test_loader.dataset, 1000)
+        self.test_embeddings = test_anchors_transformed.detach().numpy()
+        self.test_labels = test_anchor_labels.detach().numpy()
 
 
-    def _generate_embeddings(self, state, model, dataset, batch_size):
+    def _generate_embeddings(self, model, dataset, batch_size):
 
         model.eval()
         if isinstance(model, CrossSiameseNet):
