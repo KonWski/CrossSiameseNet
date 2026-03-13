@@ -90,6 +90,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         # save model to checkpoint
         roc_auc_score = statistics.get_metric_value("roc_auc", "test", epoch)
         if roc_auc_score > best_roc_auc_score:
+            best_roc_auc_score = roc_auc_score
 
             checkpoint = {
                 "experiment_hash": experiment_hash,
