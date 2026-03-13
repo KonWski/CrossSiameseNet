@@ -30,7 +30,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     criterion_triplet_loss = WeightedTripletMarginLoss(device, train_loader.batch_size, weights_1)
     batch_shaper = BatchShaper(device, training_type, alpha)
     statistics = Statistics(device, experiment_hash, model.model_name, n_epochs)
-    best_f1_score = 0
+    best_roc_auc_score = 0
 
     for epoch in range(0, n_epochs):
         
@@ -87,8 +87,8 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         statistics.log_statistics(epoch)
 
         # save model to checkpoint
-        f1_score = statistics.get_metric_value("f1", "test", epoch)
-        if f1_score > best_f1_score:
+        roc_auc_score = statistics.get_metric_value("roc_auc", "test", epoch)
+        if roc_auc_score > best_roc_auc_score:
 
             checkpoint = {
                 "experiment_hash": experiment_hash,
