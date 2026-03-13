@@ -153,7 +153,7 @@ def load_ecfp_fingerprints(smiles, y, featurizer):
         else:
             logging.info(f"Rdkit was not able to convert Smile {smile} to a mol. Hash used as a scaffold.")
 
-    return X, updated_y, updated_smiles
+    return np.array(X), updated_y, updated_smiles
 
 
 def calculate_extra_param(smiles, param_name):
