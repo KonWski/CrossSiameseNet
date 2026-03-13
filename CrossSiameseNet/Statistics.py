@@ -80,7 +80,7 @@ class Statistics:
     def update_statistics(self, epoch_id, train_loss):
 
         for state in ["train", "test"]:
-            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = self._distance_stats("train")
+            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = self._distance_stats(state)
             self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_0_0_mean"] = distances_0_0_mean
             self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_1_1_mean"] = distances_1_1_mean
             self.accumulated_statistics["epoch_id"][epoch_id][state]["distances_0_1_mean"] = distances_0_1_mean
