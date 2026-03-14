@@ -110,7 +110,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
-    statistics.save_statistics(f"{checkpoints_dir}/train_report_{experiment_hash}.xlsx")
+    statistics.save_statistics(f"{checkpoints_dir}/train_report.xlsx")
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
@@ -189,4 +189,7 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
         "train_loss": train_loss, 
         "test_loss": test_loss})
-    report_df.to_excel(f"{checkpoints_dir}/train_report_{experiment_hash}.xlsx", index=False)
+    report_df["experiment_hash"] = experiment_hash
+    report_df["model_name"] = model.model_name
+
+    report_df.to_excel(f"{checkpoints_dir}/train_report.xlsx", index=False)
