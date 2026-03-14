@@ -26,23 +26,13 @@ class MolDataset(Dataset):
     def __len__(self):
         return len(self.y)
 
-    def __getitem__(self, id0):
+    def __getitem__(self, id):
 
-        # random other molecule
-        id1 = random.randint(0, self.__len__() - 1)
+        mf = self.X[id]
+        smile = self.smiles[id]
+        label = self.y[id]
 
-        # molecular fingerprints
-        mf0 = self.X[id0]
-        mf1 = self.X[id1]
-
-        # smiles
-        smile0 = self.smiles[id0]
-        smile1 = self.smiles[id1]
-
-        # difference between targets
-        target = torch.tensor(abs(self.y[id0] - self.y[id1]), dtype=torch.float32)
-
-        return mf0, mf1, target, smile0, smile1
+        return mf, label, smile
 
     def reshape_y(self, y):
         

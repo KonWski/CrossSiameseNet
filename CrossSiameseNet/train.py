@@ -140,19 +140,18 @@ def train_MSE(model, dataset_name: str, train_loader: DataLoader,
             else:
                 model.eval()
 
-            for batch_id, (mfs0, mfs1, targets, smiles0, smiles1) in enumerate(loader):
+            for batch_id, (mfs, labels, smiles) in enumerate(loader):
 
                 with torch.set_grad_enabled(state == 'train'):
 
                     if molecule_augmentator and state == "train":
-                        mfs0 = molecule_augmentator.transform_batch(mfs0, smiles0)
-                        mfs1 = molecule_augmentator.transform_batch(mfs1, smiles1)
+                        mfs = molecule_augmentator.transform_batch(mfs, smiles)
 
-                    mfs0, mfs1, targets = mfs0.to(device), mfs1.to(device), targets.to(device)
+                    mfs, labels = mfs.to(device), labels.to(device)
                     optimizer.zero_grad()
 
-                    outputs = model(mfs0, mfs1)
-                    loss = criterion(outputs, targets)
+                    outputs = model(mfs)
+                    loss = criterion(outputs, labels)
 
                     if state == "train":
                         loss.backward()
