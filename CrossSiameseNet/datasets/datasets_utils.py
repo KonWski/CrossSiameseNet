@@ -86,8 +86,7 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
 
 def load_hiv_extra_param(dataset_path, featurizer, param_name):
 
-    _, datasets, _ = load_ogbg_dataset("ogbg-molhiv", dataset_path, featurizer)
-    train_dataset, val_dataset, test_dataset = datasets
+    train_dataset, val_dataset, test_dataset = load_ogbg_dataset("ogbg-molhiv", dataset_path, featurizer)
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
     X_val, smiles_val = val_dataset.X, val_dataset.ids
