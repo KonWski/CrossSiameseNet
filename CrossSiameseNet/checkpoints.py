@@ -47,16 +47,11 @@ def load_checkpoint(model, checkpoint_path: str):
 
     # print loaded parameters
     logging.info(f"Loaded model from checkpoint: {checkpoint_path}")
-    logging.info(f"Dataset: {checkpoint.get('dataset')}")    
-    logging.info(f"Epoch: {checkpoint.get('epoch')}")
-    logging.info(f"Used fixed training triplets: {checkpoint.get('used_fixed_training_triplets')}")
-    logging.info(f"weight_ones: {checkpoint.get('weight_ones')}")
-    logging.info(f"training_type: {checkpoint.get('training_type')}")
-    logging.info(f"lr: {checkpoint.get('lr')}")
-    logging.info(f"batch_size: {checkpoint.get('batch_size')}")
-    logging.info(f"Save dttm: {checkpoint.get('save_dttm')}")
-    logging.info(f"Train loss: {checkpoint.get('train_loss')}")    
-    logging.info(f"Test loss: {checkpoint.get('test_loss')}")
+
+    for param, param_value in checkpoint.items():
+
+        if param != "model_state_dict":
+            logging.info(f"{param}: {param_value}")
 
     logging.info(8*"-")
 
