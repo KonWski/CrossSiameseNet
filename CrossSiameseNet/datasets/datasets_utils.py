@@ -5,7 +5,6 @@ from rdkit.Chem import Descriptors, rdMolDescriptors, Crippen
 import pandas as pd
 from ogb.graphproppred.dataset_pyg import PygGraphPropPredDataset
 import logging
-from torch import tensor
 
 def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = None):
     
@@ -29,37 +28,37 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
         datasets = load_hiv_molmr(featurizer, splitter)
 
     elif dataset_name == "hiv_molwt":
-        datasets = load_hiv_extra_param(featurizer, splitter, "molwt")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "molwt")
 
     elif dataset_name == "hiv_num_rotatable_bonds":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_rotatable_bonds")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "num_rotatable_bonds")
 
     elif dataset_name == "hiv_num_rings":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_rings")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "num_rings")
 
     elif dataset_name == "hiv_num_h_bonds_acceptors":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_h_bonds_acceptors")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "num_h_bonds_acceptors")
 
     elif dataset_name == "hiv_heavy_atom_count":
-        datasets = load_hiv_extra_param(featurizer, splitter, "heavy_atom_count")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "heavy_atom_count")
 
     elif dataset_name == "hiv_csp3":
-        datasets = load_hiv_extra_param(featurizer, splitter, "csp3")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "csp3")
 
     elif dataset_name == "hiv_asa":
-        datasets = load_hiv_extra_param(featurizer, splitter, "asa")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "asa")
 
     elif dataset_name == "hiv_num_valence_electrons":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_valence_electrons")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "num_valence_electrons")
 
     elif dataset_name == "hiv_num_radical_electrons":
-        datasets = load_hiv_extra_param(featurizer, splitter, "num_radical_electrons")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "num_radical_electrons")
 
     elif dataset_name == "hiv_formal_charge":
-        datasets = load_hiv_extra_param(featurizer, splitter, "formal_charge")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "formal_charge")
 
     elif dataset_name == "hiv_qed":
-        datasets = load_hiv_extra_param(featurizer, splitter, "qed")
+        datasets = load_hiv_extra_param(ogbg_dataset_path, featurizer, "qed")
 
     elif dataset_name == "delaney":
         from deepchem.molnet import load_delaney
@@ -85,9 +84,9 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
     return X_train, y_train, smiles_train, X_val, y_val, smiles_val, X_test, y_test, smiles_test
 
 
-def load_hiv_extra_param(featurizer, splitter, param_name):
+def load_hiv_extra_param(dataset_path, featurizer, param_name):
 
-    _, datasets, _ = load_ogbg_dataset(featurizer, splitter)
+    _, datasets, _ = load_ogbg_dataset("ogbg-molhiv", dataset_path, featurizer)
     train_dataset, val_dataset, test_dataset = datasets
 
     X_train, smiles_train = train_dataset.X, train_dataset.ids
