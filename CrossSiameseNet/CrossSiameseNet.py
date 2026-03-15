@@ -46,11 +46,10 @@ class LinearBlock(nn.Module):
 class CrossSiameseNet(nn.Module):
     '''Siamese network using features from other siamese networks'''
 
-    def __init__(self, dataset, models: List[nn.Module]):
+    def __init__(self, models: List[nn.Module]):
 
         super().__init__()
 
-        self.dataset = dataset
         self.model_name = self._get_model_name(models)
 
         self.models = models
