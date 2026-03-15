@@ -49,11 +49,11 @@ class Statistics:
 
     def refresh_embeddings(self, model, train_loader, test_loader):
 
-        train_anchors_transformed, train_anchor_labels = self._generate_embeddings(model, train_loader.dataset, 1000)
+        train_anchors_transformed, train_anchor_labels = self._generate_embeddings(model, train_loader.dataset, 100)
         self.train_embeddings = train_anchors_transformed.detach()
         self.train_labels = train_anchor_labels.detach()
 
-        test_anchors_transformed, test_anchor_labels = self._generate_embeddings(model, test_loader.dataset, 1000)
+        test_anchors_transformed, test_anchor_labels = self._generate_embeddings(model, test_loader.dataset, 100)
         self.test_embeddings = test_anchors_transformed.detach()
         self.test_labels = test_anchor_labels.detach()
 
