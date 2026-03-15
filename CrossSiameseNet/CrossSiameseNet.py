@@ -51,7 +51,7 @@ class CrossSiameseNet(nn.Module):
         super().__init__()
 
         self.dataset = dataset
-        self.model_name = self._get_model_name(dataset, models)
+        self.model_name = self._get_model_name(models)
 
         self.models = models
         self.n_models = len(models)
@@ -71,20 +71,10 @@ class CrossSiameseNet(nn.Module):
             for param in model.parameters():
                 param.requires_grad = False
 
-        # initialize the weights
-        for conv_block in [self.conv_block1, self.conv_block2, self.conv_block3, 
-                           self.conv_block4, self.conv_block5]:
-            torch.nn.init.xavier_uniform_(conv_block.conv.weight)
-            conv_block.conv.bias.data.fill_(0.01)
-
-        torch.nn.init.xavier_uniform_(self.linear_block.linear.weight)
-        self.linear_block.linear.bias.data.fill_(0.01)
-
-
-    def _get_model_name(self, dataset, models):
-        model_name = f"CSN_{dataset}"
+    def _get_model_name(self, models):
+        csn_model_name = f"CSN_"
         for model in models:
-            model_name = f"{model_name}_{model.model_name}"
+            csn_model_name = csn_model_name + f"_{model.model_name}"
 
     def forward_once(self, x):
 
