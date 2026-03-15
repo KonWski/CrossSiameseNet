@@ -69,10 +69,11 @@ class Statistics:
         embeddings = []
         anchor_labels = []
 
-        for batch_id, (anchor_mf, _, _, anchor_label, _, _, _) in enumerate(loader):
-            anchor_mf = anchor_mf.to(self.device)
-            embeddings.append(model(anchor_mf).cpu())
-            anchor_labels.append(anchor_label.cpu())
+        with torch.no_grad():
+            for batch_id, (anchor_mf, _, _, anchor_label, _, _, _) in enumerate(loader):
+                anchor_mf = anchor_mf.to(self.device)
+                embeddings.append(model(anchor_mf).cpu())
+                anchor_labels.append(anchor_label.cpu())
 
         return torch.cat(embeddings, dim=0), torch.cat(anchor_labels, dim=0)
     
