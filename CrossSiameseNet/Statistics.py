@@ -163,6 +163,12 @@ class Statistics:
 
 
     def save_statistics(self, path):
+        
+        df = self.get_stats_as_df()
+        df.to_excel(path, index=False)
+
+    def get_stats_as_df(self):
+
         rows = []
 
         for epoch_id in range(self.n_epochs):
@@ -180,8 +186,8 @@ class Statistics:
         df["experiment_hash"] = self.experiment_hash
         df["model_name"] = self.model_name
 
-        df.to_excel(path, index=False)
+        return df
 
-    
+
     def get_metric_value(self, metric_name, state, epoch_id):
         return self.accumulated_statistics["epoch_id"][epoch_id][state][metric_name]
