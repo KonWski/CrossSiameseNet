@@ -102,7 +102,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         checkpoint["weight_ones"] = str(weight_ones)
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        diff_loss = abs(train_loss - test_loss)
+        diff_loss = abs(train_loss[-1] - test_loss[-1])
         if diff_loss < optimal_diff_loss:
             optimal_diff_loss = diff_loss
             checkpoint_path = f"{checkpoints_dir}/{dataset_name}_extra_train"
