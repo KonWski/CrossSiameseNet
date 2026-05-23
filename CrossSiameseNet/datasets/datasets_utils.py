@@ -12,7 +12,7 @@ def load_dataset(dataset_name, featurizer, splitter = None, ogbg_dataset_path = 
         from deepchem.molnet import load_hiv
         _, datasets, _ = load_hiv(featurizer, splitter)
 
-    if dataset_name == "ogbg-molhiv":
+    elif dataset_name == "ogbg-molhiv":
         datasets = load_ogbg_dataset(dataset_name, ogbg_dataset_path, featurizer)
 
     elif dataset_name == "hiv_esol":
