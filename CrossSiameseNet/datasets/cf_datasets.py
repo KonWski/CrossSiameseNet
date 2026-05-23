@@ -163,18 +163,13 @@ class MolDatasetTriplet(MolDataset):
         '''Set order of observations in such way that each batch has the same number of observations with label 1'''
         
         n_left_observations = len(self.y)
-        # print(f"n_left_observations: {n_left_observations}")
-        # prop_1_to_rest = len(self.indices_1) / n_left_observations
-        # print(f"prop_1_to_rest: {prop_1_to_rest}")
         n_batches = int(n_left_observations / batch_size) + 1
-        # print(f"n_batches: {n_batches}")
-        # nominal_n_1_observations = int(prop_1_to_rest * batch_size)
         nominal_n_1_observations = [len(el) for el in np.array_split(np.array(range(len(self.indices_1))), n_batches)]
 
-        # print(f"nominal_n_1_observations: {nominal_n_1_observations}")
-
         indices_free_1 = set(self.indices_1.copy())
+        to_sample_indices_free_1 = tuple(set(self.indices_1.copy()))
         indices_free_0 = set(self.indices_0.copy())
+        to_sample_indices_free_0 = tuple(set(self.indices_0.copy()))
         indices_updated = []
 
         for n_batch in range(n_batches):
@@ -184,9 +179,8 @@ class MolDatasetTriplet(MolDataset):
             n_0_observations = actual_batch_size - n_1_observations
             n_left_observations = n_left_observations - actual_batch_size
 
-            # select random indices for updated dataset
-            ids0 = random.sample(sorted(indices_free_0), n_0_observations)
-            ids1 = random.sample(sorted(indices_free_1), n_1_observations)
+            ids0 = random.sample(to_sample_indices_free_0, n_0_observations)
+            ids1 = random.sample(to_sample_indices_free_1, n_1_observations)
 
             # collect indices
             indices_updated = indices_updated + list(ids1) + list(ids0)
