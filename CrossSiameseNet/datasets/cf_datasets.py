@@ -167,9 +167,11 @@ class MolDatasetTriplet(MolDataset):
         nominal_n_1_observations = [len(el) for el in np.array_split(np.array(range(len(self.indices_1))), n_batches)]
 
         indices_free_1 = set(self.indices_1.copy())
-        to_sample_indices_free_1 = tuple(set(self.indices_1.copy()))
+        # to_sample_indices_free_1 = tuple(set(self.indices_1.copy()))
+        to_sample_indices_free_1 = tuple(indices_free_1)
         indices_free_0 = set(self.indices_0.copy())
-        to_sample_indices_free_0 = tuple(set(self.indices_0.copy()))
+        # to_sample_indices_free_0 = tuple(set(self.indices_0.copy()))
+        to_sample_indices_free_0 = tuple(indices_free_0)
         indices_updated = []
 
         for n_batch in range(n_batches):
