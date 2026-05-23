@@ -168,13 +168,14 @@ class MolDatasetTriplet(MolDataset):
 
         indices_free_1 = set(self.indices_1.copy())
         # to_sample_indices_free_1 = tuple(set(self.indices_1.copy()))
-        to_sample_indices_free_1 = tuple(indices_free_1)
         indices_free_0 = set(self.indices_0.copy())
         # to_sample_indices_free_0 = tuple(set(self.indices_0.copy()))
-        to_sample_indices_free_0 = tuple(indices_free_0)
         indices_updated = []
 
         for n_batch in range(n_batches):
+
+            to_sample_indices_free_0 = tuple(indices_free_0)
+            to_sample_indices_free_1 = tuple(indices_free_1)
 
             actual_batch_size = min(batch_size, n_left_observations)
             n_1_observations = nominal_n_1_observations[n_batch]
