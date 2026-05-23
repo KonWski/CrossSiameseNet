@@ -9,6 +9,8 @@ from CrossSiameseNet.checkpoints import save_checkpoint
 from CrossSiameseNet.BatchShaper import BatchShaper
 from CrossSiameseNet.loss import WeightedTripletMarginLoss
 from CrossSiameseNet.Statistics import Statistics
+from CrossSiameseNet.CrossSiameseNet import CrossSiameseNet
+import sys
 
 def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loader: DataLoader, 
                   n_epochs: int, device, checkpoints_dir: str, use_fixed_training_triplets: bool = False,
@@ -25,6 +27,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     batch_shaper = BatchShaper(device, training_type, alpha)
     statistics = Statistics(device, generate_stats)
 
+    optimal_diff_loss = sys.float_info.max
     train_loss = []
     train_distances_0_0_mean = []
     train_distances_1_1_mean = []
@@ -52,6 +55,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 loader.dataset.shuffle_data(train_loader.batch_size)
             else:
                 model.eval()
+                if isinstance(model, CrossSiameseNet):
+                    for m in model.models:
+                        m.eval()
 
             for batch_id, (anchor_mf, positive_mf, negative_mf, anchor_label) in enumerate(loader):
 
@@ -68,7 +74,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
                 running_loss += loss.item()
 
             epoch_loss = round(running_loss / (batch_id + 1), 5)
-            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = statistics.distance_stats(model, loader)
+            distances_0_0_mean, distances_1_1_mean, distances_0_1_mean = None, None, None
 
             logging.info(f"Epoch: {epoch}, state: {state}, loss: {epoch_loss}")
             logging.info(f"distances_0_0_mean: {distances_0_0_mean}, distances_1_1_mean: {distances_1_1_mean}, distances_0_1_mean: {distances_0_1_mean}")
@@ -96,8 +102,11 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         checkpoint["weight_ones"] = str(weight_ones)
         checkpoint["save_dttm"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        checkpoint_path = f"{checkpoints_dir}/{dataset_name}_{epoch}"
-        save_checkpoint(checkpoint, checkpoint_path)
+        diff_loss = abs(train_loss - test_loss)
+        if diff_loss < optimal_diff_loss:
+            optimal_diff_loss = diff_loss
+            checkpoint_path = f"{checkpoints_dir}/{dataset_name}_extra_train"
+            save_checkpoint(checkpoint, checkpoint_path)
     
     # save report
     report_df = pd.DataFrame({
@@ -111,7 +120,7 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
         "test_distances_1_1_mean": test_distances_1_1_mean,
         "test_distances_0_1_mean": test_distances_0_1_mean
         })
-    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}.xlsx", index=False)
+    report_df.to_excel(f"{checkpoints_dir}/train_report_{dataset_name}_extra_train.xlsx", index=False)
 
 
 def train_MSE(model, dataset_name: str, train_loader: DataLoader, 
