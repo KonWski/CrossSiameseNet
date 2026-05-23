@@ -178,6 +178,7 @@ class MolDatasetTriplet(MolDataset):
             to_sample_indices_free_1 = tuple(indices_free_1)
 
             actual_batch_size = min(batch_size, n_left_observations)
+            print(f"actual_batch_size: {actual_batch_size}")
             n_1_observations = nominal_n_1_observations[n_batch]
             n_0_observations = actual_batch_size - n_1_observations
             n_left_observations = n_left_observations - actual_batch_size
