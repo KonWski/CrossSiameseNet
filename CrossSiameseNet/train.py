@@ -52,6 +52,10 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
 
             if state == "train":
                 model.train()
+                if isinstance(model, CrossSiameseNet):
+                    for m in model.models:
+                        m.train()
+
                 loader.dataset.shuffle_data(train_loader.batch_size)
             else:
                 model.eval()
