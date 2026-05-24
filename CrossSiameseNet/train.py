@@ -37,6 +37,9 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
     test_distances_1_1_mean = []
     test_distances_0_1_mean = []
 
+    n_epochs_early_exit = 3
+    n_epochs_since_last_update = 0
+
     for epoch in range(0, n_epochs):
         
         checkpoint = {}
@@ -111,7 +114,13 @@ def train_triplet(model, dataset_name: str, train_loader: DataLoader, test_loade
             optimal_diff_loss = diff_loss
             checkpoint_path = f"{checkpoints_dir}/{dataset_name}_extra_train"
             save_checkpoint(checkpoint, checkpoint_path)
-    
+            n_epochs_since_last_update = 0
+        else:
+            n_epochs_since_last_update += 1
+
+        if n_epochs_early_exit == n_epochs_since_last_update:
+            break
+
     # save report
     report_df = pd.DataFrame({
         "epoch": [n_epoch for n_epoch in range(0, n_epochs)], 
